@@ -1,0 +1,1306 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>진복복파이트</title>
+<style>
+:root {
+ --site-primary:#7C5CFC; --site-on-primary:#FFFFFF;
+ --site-secondary:#183047; --site-on-secondary:#F6F8FC;
+ --site-background:#0D1422; --site-on-background:#F3F5FC;
+ --site-font-body:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+ --site-font-heading:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+ --site-heading-scale:1; --site-spacing-scale:1; --site-radius-scale:1; --site-decoration-opacity:1;
+}
+*{box-sizing:border-box} html,body{min-height:100%;width:100%;} body{margin:0;font-family:var(--site-font-body);background:var(--site-background);color:var(--site-on-background)}
+#app{display:block;min-height:100vh;width:100%;background-color:var(--site-background);color:var(--site-on-background);padding:calc(20px * var(--site-spacing-scale));}
+header{max-width:1100px;margin:0 auto 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:44px;height:44px;border-radius:14px;background:var(--site-primary);display:grid;place-items:center;font-size:24px;box-shadow:0 8px 24px #0005}
+h1{font-family:var(--site-font-heading);font-size:calc(26px * var(--site-heading-scale));margin:0;letter-spacing:-.8px} .sub{color:#aebbd0;font-size:13px;margin-top:3px}
+.pill{border:1px solid #34445c;background:#152236;color:#cbd6e8;padding:8px 12px;border-radius:999px;font-size:12px}
+main{max-width:1100px;margin:auto;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(290px,.75fr);gap:16px}
+.panel{background:#121d2e;border:1px solid #293950;border-radius:20px;padding:16px;min-width:0;box-shadow:0 10px 30px #0002}
+.panel h2{font-size:16px;margin:0 0 12px}.arena{padding:10px;background:#0b1220;border-radius:15px;border:1px solid #283850;overflow:hidden}
+canvas{display:block;width:100%;height:auto;aspect-ratio: 1.5;touch-action:manipulation}
+.status{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 2px 0;font-size:13px;color:#b7c5d9}.hp{height:8px;background:#29364b;border-radius:99px;overflow:hidden;margin-top:5px}.hp span{height:100%;display:block;border-radius:99px;transition:width .2s}.healthrow .hp:not(.delayed){position:relative;z-index:2;background:transparent}.healthrow .hp.delayed{position:relative;z-index:1;height:8px;margin-top:-8px;background:#3a2d22}.hp.delayed span{background:#ff9d3d!important;transition:width .85s linear}.healthrow .cooldown{height:5px;margin-top:4px;background:#263a32;border-radius:99px;overflow:hidden}.healthrow .cooldown span{display:block;height:100%;width:0;background:#45f078;border-radius:99px;box-shadow:0 0 7px #45f07888;transition:width .05s linear}.healthrow strong{font-size:12px}.healthrow .right{text-align:right}
+label{font-size:12px;color:#b9c8dc;display:block;margin:0 0 6px}input,select{width:100%;background:#0b1423;border:1px solid #34445c;color:#f5f7ff;padding:10px 11px;border-radius:10px;font:inherit;min-width:0}input[type=color]{height:41px;padding:4px}input[type=range]{padding:0;accent-color:var(--site-primary)}.field{margin-bottom:12px}.twocol{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.stat{background:#0b1423;border:1px solid #293950;border-radius:12px;padding:9px;text-align:center}.stat b{font-size:17px;display:block}.stat span{font-size:10px;color:#9eafc6}
+button{border:0;border-radius:11px;padding:11px 14px;background:var(--site-primary);color:var(--site-on-primary);font-weight:750;font-size:13px;cursor:pointer;transition:transform .12s,filter .12s}button:hover{filter:brightness(1.12)}button:active{transform:scale(.98)}button.secondary{background:#25354c;color:#e5edfa;border:1px solid #3b4e68}button.danger{background:#b93e58}.buttons{display:flex;gap:8px;flex-wrap:wrap}.buttons button{flex:1}.hint{font-size:11px;line-height:1.55;color:#879bb6;margin:10px 2px 0}.log{height:96px;overflow:auto;background:#0b1423;border:1px solid #293950;border-radius:12px;padding:10px;font-size:12px;line-height:1.6;color:#b8c7dc}.log p{margin:0 0 4px}.winner{color:#f9d77a;font-weight:800}.tag{display:inline-block;font-size:10px;border-radius:6px;padding:4px 6px;background:#273954;color:#c9d8ef;margin-left:5px}
+@media(max-width:760px){main{grid-template-columns:1fr}#app{padding:14px}.panel{padding:13px}h1{font-size:23px}}
+</style>
+<style>.healthrow .cooldown{display:block!important}</style>
+</head>
+<body><div id="app">
+<header><div class="brand"><div class="logo">⚔️</div><div><h1>WEAPON BALL <span style="color:#9d8aff">ARENA</span></h1><div class="sub">나만의 무기를 만들고, 아레나에서 맞붙어라.</div></div></div><div class="pill">CUSTOM DUEL · DOYUN vs CHANYOUNG</div></header>
+<main>
+<section class="panel"><h2>⚡ 전투 아레나 <span class="tag">실시간 시뮬레이션</span></h2><div class="arena"><canvas id="arena" width="720" height="480" aria-label="전투 아레나"></canvas></div>
+<div class="healthrow"><div><strong id="leftName">🔵 도윤 · 140 HP</strong><div class="hp"><span id="hp1" style="width:100%;background:#56c7ff"></span></div><div class="hp delayed"><span id="hp1delay" style="width:100%"></span></div><div class="hp cooldown"><span id="cool1"></span></div></div><div class="right"><strong id="rightName">🔴 찬영 · 120 HP</strong><div class="hp"><span id="hp2" style="width:100%;background:#ff617e"></span></div><div class="hp delayed"><span id="hp2delay" style="width:100%"></span></div><div class="hp cooldown"><span id="cool2"></span></div></div></div>
+<div class="status"><span id="battleStatus">전투 준비 완료</span><span id="timer">00:00</span></div><div class="buttons" style="margin-top:12px"><button id="fight">▶ 전투 시작</button><button class="secondary" id="reset">↻ 초기화</button><button class="secondary" id="pause">Ⅱ 일시정지</button></div><div id="v29Controls" style="margin-top:8px;display:flex;justify-content:flex-start"><button id="v29Speed" class="secondary">▶ 2배속 OFF</button></div>
+<p class="hint">도윤은 3갈래 발톱참으로 공격하고, 찬영은 크림빵을 순서대로 던져. 경률은 메이를 소환하고 태은은 넓은 물기둥, 제화는 부채꼴 연막으로 공격해. 특수 능력은 자동 발동해!</p>
+</section>
+<aside class="panel"><h2>🛠️ 내 웨폰볼 만들기</h2><input id="ballName" type="hidden" value="">
+<div class="twocol"><div class="field"><label for="ballColor">공 색상</label><input id="ballColor" type="color" value="#36a8ff"></div><div class="field"><label for="ballSize">크기 <b id="sizeVal">30</b></label><input id="ballSize" type="range" min="20" max="43" value="30"></div></div>
+<div class="field"><label for="weapon">장착 무기 / 특수 캐릭터</label><select id="weapon"><option value="doyun">✨ 도윤 — 번갈아 돌진</option><option value="chanyoung">🍞 찬영 — 크림빵 공격</option><option value="jae">🎰 이재 — 슬롯머신 & 칩 발사</option><option value="gyeongryul">🧨 경률 — 메이 소환</option><option value="taeeun">🌊 태은 — 물기둥</option><option value="jehwa">🌫️ 제화 — 연막</option><option value="yeongmin">🐣 영민 — 알과 병아리</option><option value="dohyeon">ㄷㅊ 도현 — 자음 탄환</option></select></div>
+<div class="twocol"><div class="field"><label for="power">공격력 <b id="powerVal">15</b></label><input id="power" type="range" min="5" max="30" value="15"></div><div class="field"><label for="speed">이동 속도 <b id="speedVal">7</b></label><input id="speed" type="range" min="2" max="7" value="7"></div></div>
+<div class="field"><label for="health">최대 체력 <b id="healthVal">130</b></label><input id="health" type="range" min="60" max="180" step="10" value="130"></div>
+<div class="stats"><div class="stat"><b id="statDmg">15</b><span>기본 공격력</span></div><div class="stat"><b id="statRange">48</b><span>무기 사거리</span></div><div class="stat"><b id="statRate">1.0초</b><span>공격 간격</span></div></div>
+<div class="buttons"><button id="apply">✓ 내 공 적용</button><button id="random" class="secondary">🎲 랜덤 제작</button></div>
+<hr style="border:0;border-top:1px solid #293950;margin:16px 0">
+<h2>🎯 상대 웨폰볼 만들기</h2><input id="enemyName" type="hidden" value="">
+<div class="twocol"><div class="field"><label for="enemyColor">상대 공 색상</label><input id="enemyColor" type="color" value="#ff526f"></div><div class="field"><label for="enemySize">상대 크기 <b id="enemySizeVal">30</b></label><input id="enemySize" type="range" min="20" max="43" value="30"></div></div>
+<div class="field"><label for="enemyWeapon">상대 무기 / 특수 캐릭터</label><select id="enemyWeapon"><option value="doyun">✨ 도윤 — 번갈아 돌진</option><option value="chanyoung" selected>🍞 찬영 — 크림빵 공격</option><option value="jae">🎰 이재 — 슬롯머신 & 칩 발사</option><option value="gyeongryul">🧨 경률 — 메이 소환</option><option value="taeeun">🌊 태은 — 물기둥</option><option value="jehwa">🌫️ 제화 — 연막</option><option value="yeongmin">🐣 영민 — 알과 병아리</option><option value="dohyeon">ㄷㅊ 도현 — 자음 탄환</option></select></div>
+<div class="twocol"><div class="field"><label for="enemyPower">상대 공격력 <b id="enemyPowerVal">15</b></label><input id="enemyPower" type="range" min="5" max="30" value="15"></div><div class="field"><label for="enemySpeed">상대 이동 속도 <b id="enemySpeedVal">7</b></label><input id="enemySpeed" type="range" min="2" max="7" value="7"></div></div>
+<div class="field"><label for="enemyHealth">상대 최대 체력 <b id="enemyHealthVal">130</b></label><input id="enemyHealth" type="range" min="60" max="180" step="10" value="130"></div>
+<div class="field"><label for="difficulty">상대 난이도 보정</label><select id="difficulty"><option value="0.85">쉬움</option><option value="1" selected>보통</option><option value="1.2">어려움</option></select></div><div class="buttons"><button id="applyEnemy" class="secondary">상대 설정 적용</button></div>
+</aside>
+<section class="panel" style="grid-column:1/-1"><h2>📜 전투 기록</h2><div class="log" id="log"><p>아레나에 오신 걸 환영해! 공을 커스터마이징하고 <b>전투 시작</b>을 눌러 봐.</p></div></section>
+</main></div>
+<script>
+(() => {
+const $=id=>document.getElementById(id), canvas=$('arena'),ctx=canvas.getContext('2d');
+// Compatibility fallback for canvas renderers without CanvasRenderingContext2D.roundRect.
+if(typeof ctx.roundRect!=='function')ctx.roundRect=function(x,y,w,h,r){r=Math.max(0,Math.min(r,Math.abs(w)/2,Math.abs(h)/2));this.moveTo(x+r,y);this.lineTo(x+w-r,y);this.quadraticCurveTo(x+w,y,x+w,y+r);this.lineTo(x+w,y+h-r);this.quadraticCurveTo(x+w,y+h,x+w-r,y+h);this.lineTo(x+r,y+h);this.quadraticCurveTo(x,y+h,x,y+h-r);this.lineTo(x,y+r);this.quadraticCurveTo(x,y,x+r,y);};
+const weapons={doyun:{name:'도윤',range:58,rate:.9,bonus:1.25,icon:'✨'},chanyoung:{name:'찬영',range:88,rate:1.3,bonus:1.05,icon:'🍞'},jae:{name:'이재',range:0,rate:1,bonus:1,icon:'🎰'},gyeongryul:{name:'경률',range:0,rate:1,bonus:1,icon:'🧨'},taeeun:{name:'태은',range:0,rate:1,bonus:1,icon:'🌊'},jehwa:{name:'제화',range:0,rate:1,bonus:1,icon:'🚬'},minjae:{name:'민재',range:0,rate:1,bonus:1,icon:'🕳️'},jeongwon:{name:'정원',range:0,rate:1,bonus:1,icon:'🇰🇷'},hyunin:{name:'현인',range:0,rate:1,bonus:1,icon:'🗡️'},chanhyeok:{name:'찬혁',range:0,rate:1,bonus:1,icon:'🔫'},geonho:{name:'건호',range:0,rate:1,bonus:1,icon:'🔴'},yeongmin:{name:'영민',range:0,rate:1,bonus:1,icon:'🐣'},dohyeon:{name:'도현',range:0,rate:1,bonus:1,icon:'ㄷㅊ'}};
+let player,enemy,running=false,paused=false,last=0,elapsed=0,raf=0,logItems=[];
+function config(){const weapon=$('weapon').value;return {name:weapons[weapon]?.name||'웨폰볼',color:$('ballColor').value,size:+$('ballSize').value,power:+$('power').value,speed:+$('speed').value,maxHp:+$('health').value,weapon}}
+function makeBall(c,x,y,side){const a=Math.random()*Math.PI*2;return {...c,x,y,vx:Math.cos(a)*c.speed,vy:Math.sin(a)*c.speed,hp:c.maxHp,maxHp:c.maxHp,side,angle:0,cool:Math.random()*.4,flash:0,knock:0,dashing:0,dashCooldown:0,dashCycle:0,specialTimer:side?2:3,projectiles:[],damageNumbers:[],shakeTimer:0,hpDelayTimer:0,delayedHp:c.maxHp,purpleTimer:0,fireworkTimer:0,specialText:'',specialTextTimer:0,chips:0,chipFireTimer:0,slotTimer:5,slotSpin:0,slotDigits:'000',mei:[],waterEffects:[],smokeEffects:[],smokeDotTimer:0,smokeDotTarget:null,smokeDotTicks:0,creamStep:0,creamTimer:3,creamName:'',creamNameTimer:0}}
+function addLog(s,win=false){logItems.unshift({s,win});logItems=logItems.slice(0,14);$('log').innerHTML=logItems.map(x=>`<p class="${x.win?'winner':''}">${x.s}</p>`).join('')}
+function updateStats(){const c=config(),w=weapons[c.weapon];$('sizeVal').textContent=c.size;$('powerVal').textContent=c.power;$('speedVal').textContent=c.speed;$('healthVal').textContent=c.maxHp;$('statDmg').textContent=Math.round(c.power*w.bonus);$('statRange').textContent=w.range;$('statRate').textContent=w.rate.toFixed(2)+'초'}
+['ballSize','power','speed','health','weapon','enemySize','enemyPower','enemySpeed','enemyHealth'].forEach(id=>$(id).addEventListener('input',()=>{updateStats();$('enemySizeVal').textContent=$('enemySize').value;$('enemyPowerVal').textContent=$('enemyPower').value;$('enemySpeedVal').textContent=$('enemySpeed').value;$('enemyHealthVal').textContent=$('enemyHealth').value}));
+function create(){cancelAnimationFrame(raf);running=false;paused=false;elapsed=0;last=0;const pc=config(),ew=$('enemyWeapon').value,diff=+$('difficulty').value;const pColors={doyun:'#f7f8ff',chanyoung:'#b7d94b',gyeongryul:'#ffb84a',taeeun:'#48cfff',jehwa:'#b5b9c8'};player=makeBall({...pc,name:weapons[pc.weapon]?.name||'웨폰볼',color:pColors[pc.weapon]||pc.color,speed:pc.speed*2.5},150,240,0);enemy=makeBall({name:weapons[ew]?.name||'상대',color:pColors[ew]||$('enemyColor').value,size:+$('enemySize').value,power:+$('enemyPower').value*diff,speed:+$('enemySpeed').value*2.5*diff,maxHp:+$('enemyHealth').value,weapon:ew},570,240,1);player.specialTimer=5;enemy.specialTimer=5;player.creamTimer=3;enemy.creamTimer=3;$('battleStatus').textContent=`${player.name} vs ${enemy.name} · 특수 능력 준비`;$('timer').textContent='00:00';$('pause').textContent='Ⅱ 일시정지';updateHud();draw();}
+function updateHud(){if(!player||!enemy)return;$('leftName').textContent=`🔵 ${player.name} · ${Math.max(0,Math.ceil(player.hp))}/${player.maxHp} HP`;$('rightName').textContent=`🔴 ${enemy.name} · ${Math.max(0,Math.ceil(enemy.hp))}/${enemy.maxHp} HP`;$('hp1').style.width=Math.max(0,player.hp/player.maxHp*100)+'%';$('hp2').style.width=Math.max(0,enemy.hp/enemy.maxHp*100)+'%';$('hp1delay').style.width=Math.max(0,player.delayedHp/player.maxHp*100)+'%';$('hp2delay').style.width=Math.max(0,enemy.delayedHp/enemy.maxHp*100)+'%'}
+function apply(){create();addLog(`내 공을 적용했어: ${player.name} / ${weapons[player.weapon].name} / 공격력 ${player.power}.`)}
+function applyEnemy(){create();addLog(`상대 설정 적용: ${weapons[enemy.weapon].name}, 체력 ${enemy.maxHp}, 공격력 ${enemy.power}.`)}
+function draw(){ctx.clearRect(0,0,720,480);const g=ctx.createLinearGradient(0,0,720,480);g.addColorStop(0,'#111e32');g.addColorStop(1,'#0a1220');ctx.fillStyle=g;ctx.fillRect(0,0,720,480);ctx.strokeStyle='#24364d';ctx.lineWidth=1;for(let x=24;x<720;x+=36){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,480);ctx.stroke()}for(let y=24;y<480;y+=36){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(720,y);ctx.stroke()}ctx.strokeStyle='#334963';ctx.lineWidth=3;ctx.strokeRect(10,10,700,460);ctx.setLineDash([8,10]);ctx.beginPath();ctx.moveTo(360,16);ctx.lineTo(360,464);ctx.stroke();ctx.setLineDash([]);drawCharacterEffects();if(player)drawBall(player);if(enemy)drawBall(enemy);drawProjectiles();drawCreamBread();ctx.fillStyle='#8497b2';ctx.font='12px system-ui';ctx.textAlign='center';ctx.fillText('BLUE SIDE',155,38);ctx.fillText('RED SIDE',565,38);if(!running){ctx.fillStyle='#050a12aa';ctx.fillRect(0,0,720,480);ctx.fillStyle='#f3f5fc';ctx.font='bold 25px system-ui';ctx.fillText((player&&player.hp<=0)||(enemy&&enemy.hp<=0)?'MATCH COMPLETE':'READY TO FIGHT',360,225);ctx.font='14px system-ui';ctx.fillStyle='#aebbd0';ctx.fillText('전투 시작을 눌러 아레나를 열어!',360,254)}}
+weapons.chanhyeok={name:'찬혁',range:0,rate:1,bonus:1,icon:'🪞'};
+function drawBall(b){ctx.save();const shake=b.shakeTimer>0?Math.sin(elapsed*95)*Math.min(5,b.shakeTimer*18):0;ctx.translate(b.x+shake,b.y+Math.cos(elapsed*110)*Math.min(3,b.shakeTimer*12));ctx.rotate(b.angle);ctx.shadowColor=b.color;ctx.shadowBlur=12;ctx.fillStyle=b.flash>0?'#ffffff':b.color;ctx.beginPath();ctx.arc(0,0,b.size,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=b.smokeDotTimer>0?'#42ff65':b.purpleTimer>0?'#b45cff':b.hp/b.maxHp<.3?'#ff2638':'#ffffffaa';ctx.lineWidth=b.smokeDotTimer>0?6:b.purpleTimer>0?6:b.hp/b.maxHp<.3?5:3;ctx.stroke();if(b.smokeLabelTimer>0){ctx.save();ctx.globalAlpha=Math.min(1,b.smokeLabelTimer);ctx.fillStyle='#aaffb5';ctx.font='bold 18px system-ui';ctx.textAlign='center';ctx.shadowColor='#153d1c';ctx.shadowBlur=6;ctx.fillText('간접흡연',0,-b.size-38);ctx.restore();}if(b.fireworkTimer>0){for(let i=0;i<24;i++){const a=elapsed*2+i*Math.PI*2/24,r=b.size+12+((i*17)%25);ctx.strokeStyle=['#ffd34d','#ff7b54','#ff6bd6','#78f5ff'][i%4];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r);ctx.lineTo(Math.cos(a)*(r+5+(i%4)*2),Math.sin(a)*(r+5+(i%4)*2));ctx.stroke();}}if(b.specialTextTimer>0){ctx.fillStyle='#d7a6ff';ctx.font='bold 22px system-ui';ctx.textAlign='center';ctx.shadowColor='#6d27c8';ctx.shadowBlur=8;ctx.fillText(b.specialText,0,-b.size-42);ctx.shadowBlur=0;}ctx.fillStyle='#101827';ctx.beginPath();ctx.arc(-b.size*.28,-b.size*.12,b.size*.11,0,Math.PI*2);ctx.arc(b.size*.28,-b.size*.12,b.size*.11,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#101827';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(0,b.size*.1,b.size*.34,.2,Math.PI-.2);ctx.stroke();if(b.weapon==='doyun'||(b.name==='도윤'&&b.dashing>0)){ctx.strokeStyle='#e8f7ff';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-b.size*1.7,-b.size*.7);ctx.lineTo(-b.size*2.8,0);ctx.lineTo(-b.size*1.7,b.size*.7);ctx.stroke();ctx.fillStyle='#ffffff';ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.fillText(b.dashing>0?'💥 진복의 돌진!':'도윤',0,-b.size-12)}else if(b.weapon==='chanyoung'||b.name==='찬영'){ctx.fillStyle='#e8ff70';ctx.font='bold 15px system-ui';ctx.textAlign='center';ctx.fillText('🍞 찬영',0,-b.size-8)}else if(b.weapon==='jae'){ctx.fillStyle='#ffd36b';ctx.font='bold 15px system-ui';ctx.textAlign='center';ctx.fillText('🎰 이재',0,-b.size-8);ctx.fillStyle='#ffd36b';ctx.font='bold 12px system-ui';ctx.fillText(`칩 ${b.chips}`,0,b.size+18);if(b.slotSpin!==0){ctx.fillStyle='#fff1a6';ctx.font='bold 17px monospace';ctx.fillText(b.slotDigits,0,b.size+40)}}if(b.weapon!=='doyun'&&b.weapon!=='chanyoung'&&b.weapon!=='jae'){const w=weapons[b.weapon];ctx.strokeStyle='#e8edf7';ctx.lineCap='round';ctx.lineWidth=b.weapon==='spear'?5:7;ctx.beginPath();ctx.moveTo((b.side?-1:1)*b.size*.6,0);ctx.lineTo((b.side?-1:1)*(b.size+w.range*.62),0);ctx.stroke();ctx.fillStyle=b.weapon==='shield'?'#8bd7ff':b.color;ctx.beginPath();ctx.arc((b.side?-1:1)*(b.size+w.range*.62),0,b.weapon==='hammer'?12:b.weapon==='axe'?10:6,0,Math.PI*2);ctx.fill()}ctx.restore();for(const n of b.damageNumbers){ctx.save();ctx.globalAlpha=Math.max(0,n.life/1.05);ctx.fillStyle=n.heal?'#42f58d':'#ff414b';ctx.font='bold 27px system-ui';ctx.textAlign='center';ctx.shadowColor=n.heal?'#005b2c':'#3a0000';ctx.shadowBlur=7;ctx.fillText(n.heal?`+${n.amount}`:`-${n.amount}`,b.x+n.offsetX,b.y-b.size-18-n.rise+n.offsetY);ctx.restore()}}
+function drawProjectiles(){for(const b of [player,enemy]){if(!b)continue;for(const p of b.projectiles){if(p.chip){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(elapsed*8);ctx.fillStyle=p.purpleChip?'#bd65ff':'#ffc34d';ctx.strokeStyle=p.purpleChip?'#f0d0ff':'#fff0a8';ctx.shadowColor=p.purpleChip?'#a42dff':'transparent';ctx.shadowBlur=p.purpleChip?14:0;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-7,-5);ctx.lineTo(7,-5);ctx.lineTo(9,0);ctx.lineTo(7,5);ctx.lineTo(-7,5);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()}else if(!p.split){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#dfff69';ctx.strokeStyle='#f7ffb0';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,16,9,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#5c8c30';ctx.fillRect(-3,-12,6,5);ctx.restore()}else if(p.pieces){for(const q of p.pieces){ctx.save();ctx.translate(q.x,q.y);ctx.rotate(.6);ctx.fillStyle='#dfff69';ctx.strokeStyle='#f7ffb0';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,8,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore()}}}}}
+function damageBall(b,amount){for(const owner of [player,enemy]){if(!owner||owner.weapon!=='jae')continue;if(owner.slotDigits!=='999')owner.last999Firework=false;else if(!owner.last999Firework){triggerFireworks(owner);owner.last999Firework=true;}}b.hp-=amount;b.flash=.13;b.shakeTimer=.3;b.hpDelayTimer=1;b.damageNumbers.push({amount:Math.round(amount),life:1.05,rise:0,offsetX:(Math.random()-.5)*b.size*1.8,offsetY:(Math.random()-.5)*b.size*.8});}
+function healBall(b,amount){b.hp=Math.min(b.maxHp,b.hp+amount);b.flash=.1;b.damageNumbers.push({amount:Math.round(amount),life:1.05,rise:0,heal:true,offsetX:(Math.random()-.5)*b.size*1.8,offsetY:(Math.random()-.5)*b.size*.8});}
+function triggerFireworks(b){b.fireworkTimer=1.15;}
+function specialCharacterTick(dt){for(const b of [player,enemy]){if(!b)continue;const target=b===player?enemy:player;b.specialTimer-=dt;if(b.weapon==='gyeongryul'&&b.specialTimer<=0){b.specialTimer=4;if(b.mei.length===0){const a=Math.atan2(target.y-b.y,target.x-b.x);b.mei.push({x:b.x+Math.cos(a)*(b.size+9),y:b.y+Math.sin(a)*(b.size+9),size:Math.max(3,b.size-5),hp:10,vx:0,vy:0,life:12,owner:b,target,hit:false});addLog(`🧨 ${b.name}이 메이 1마리를 소환했다!`)}}if(b.weapon==='taeeun'&&b.specialTimer<=0){b.specialTimer=7;if(Math.random()<.1){damageBall(b,20);b.specialText='불발';b.specialTextTimer=1;addLog(`🌊 ${b.name}의 물기둥 불발! 자신에게 20 피해.`)}else{b.waterEffects.push({life:2,age:0,owner:b,target,side:b.side,hit:false});addLog(`🌊 ${b.name}이 2초 동안 물기둥을 발사했다!`)}}if(b.weapon==='jehwa'&&b.specialTimer<=0){b.specialTimer=6;const dx=target.x-b.x,dy=target.y-b.y,d=Math.hypot(dx,dy),duration=d<150?1:2;b.smokeEffects.push({life:duration,age:0,owner:b,target,angle:Math.atan2(dy,dx),duration});addLog(`🌫️ ${b.name}이 부채꼴 연막을 펼쳤다!`)}}
+for(const b of [player,enemy]){if(!b)continue;for(const m of b.mei){if(m.hp<=0||m.life<=0)continue;m.life-=dt;if(Math.hypot(m.target.x-m.x,m.target.y-m.y)<m.target.size+(m.size||Math.max(3,b.size-5))){damageBall(m.target,10);m.life=0;addLog('💥 메이가 적에게 닿아 자폭! 10 피해.')}}b.mei=b.mei.filter(m=>m.life>0&&m.hp>0);for(const e of b.waterEffects){e.life-=dt;e.age+=dt;const t=e.target,dx=t.x-b.x,dy=t.y-b.y,dist=Math.hypot(dx,dy),angle=Math.atan2(dy,dx);if(!e.hit&&dist<300&&Math.abs(Math.atan2(Math.sin(angle-Math.atan2(t.y-b.y,t.x-b.x)),Math.cos(angle-Math.atan2(t.y-b.y,t.x-b.x))))<.7&&Math.abs(dy)<Math.max(48,b.size+t.size+18)){damageBall(t,10);e.hit=true;addLog(`💧 물기둥 명중! ${t.name}에게 10 피해.`)}}b.waterEffects=b.waterEffects.filter(e=>e.life>0);for(const e of b.smokeEffects){e.life-=dt;e.age+=dt;e.next=(e.next||0)-dt;if(e.next<=0){e.next=.5;const t=e.target,dx=t.x-b.x,dy=t.y-b.y,d=Math.hypot(dx,dy),a=Math.atan2(dy,dx),diff=Math.atan2(Math.sin(a-e.angle),Math.cos(a-e.angle));if(d<260&&Math.abs(diff)<.58){damageBall(t,10);addLog(`🌫️ 연막 명중! ${t.name}에게 10 피해.`)}}}b.smokeEffects=b.smokeEffects.filter(e=>e.life>0)}}
+function drawCharacterEffects(){for(const b of [player,enemy]){if(!b)continue;for(const m of b.mei){ctx.fillStyle='#ffca74';ctx.strokeStyle='#fff0cb';ctx.lineWidth=2;ctx.beginPath();ctx.arc(m.x,m.y,m.size||Math.max(3,b.size-5),0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#38283b';ctx.font='bold 8px system-ui';ctx.textAlign='center';ctx.fillText('메이',m.x,m.y+3)}for(const e of b.waterEffects){const width=58,height=300;ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.atan2(e.target.y-b.y,e.target.x-b.x));ctx.fillStyle='#049cf055';ctx.strokeStyle='#7beaff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,-width/2);ctx.quadraticCurveTo(height*.42,-width*.7,height,0);ctx.quadraticCurveTo(height*.42,width*.7,0,width/2);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()}for(const e of b.smokeEffects){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(e.angle);ctx.fillStyle='#b7bdc755';ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(260, -165);ctx.arc(0,0,308,-.57,.57);ctx.closePath();ctx.fill();ctx.restore()}}}
+function creamBreadTick(dt){for(const b of [player,enemy]){if(!b||b.weapon!=='chanyoung')continue;const t=b===player?enemy:player;b.creamTimer-=dt;if(b.creamTimer<=0){b.creamTimer=3;const labels=['와','와','와','너무맛있어','꼭먹어'],step=b.creamStep%5,label=labels[step],damage=step<3?5:step===3?6:8,splitDamage=step<3?3:4;b.creamStep=(step+1)%5;b.creamName=label;b.creamNameTimer=1.2;const a=Math.atan2(t.y-b.y,t.x-b.x);b.projectiles.push({cream:true,x:b.x,y:b.y,vx:Math.cos(a)*330,vy:Math.sin(a)*330,life:3,damage,splitDamage,target:t,split:false,hit:false});addLog(`🍞 찬영의 크림빵 공격 「${label}」!`)}for(const p of b.projectiles){if(!p.cream||p.life<=0)continue;p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;const target=p.target;if(!p.split&&(Math.hypot(p.x-target.x,p.y-target.y)<target.size+12)){damageBall(target,p.damage);p.life=0;addLog(`🍞 크림빵 명중! ${target.name}에게 ${p.damage} 피해.`);continue}else if(!p.split&&(p.x<22||p.x>698||p.y<22||p.y>458)){p.split=true;p.life=1.2;p.pieces=[{x:p.x,y:p.y,vx:-240,vy:-180,hit:false},{x:p.x,y:p.y,vx:240,vy:180,hit:false}]}if(p.split&&p.pieces){for(const q of p.pieces){q.x+=q.vx*dt;q.y+=q.vy*dt;if(!q.hit&&Math.hypot(q.x-target.x,q.y-target.y)<target.size+7){damageBall(target,p.splitDamage);q.hit=true;addLog(`🥐 크림빵 조각 명중! ${target.name}에게 ${p.splitDamage} 피해.`)}}}}b.projectiles=b.projectiles.filter(p=>p.life>0)}}
+function drawCreamBread(){for(const b of [player,enemy]){if(!b)continue;if(b.weapon==='chanyoung'&&b.creamNameTimer>0){ctx.fillStyle='#fff';ctx.font='bold 18px system-ui';ctx.textAlign='center';ctx.fillText(b.creamName,b.x,b.y-b.size-38)}for(const p of b.projectiles){if(!p.cream)continue;if(p.split&&p.pieces){for(const q of p.pieces){ctx.fillStyle='#fff';ctx.strokeStyle='#d8b18a';ctx.lineWidth=2;ctx.beginPath();ctx.arc(q.x,q.y,7,0,Math.PI*2);ctx.fill();ctx.stroke()}}else{ctx.fillStyle='#9b633b';ctx.strokeStyle='#f3d1a5';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(p.x-11,p.y-7,22,14,5);ctx.fill();ctx.stroke();ctx.fillStyle='#fff4df';ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fill()}}b.creamNameTimer=Math.max(0,b.creamNameTimer-.016)}}
+function attack(a,b,dt){a.cool-=dt;a.angle+=(a.side?-1:1)*dt*.7;if(a.cool<=0){const w=weapons[a.weapon]||{name:a.weapon||'공격',range:0,rate:1,bonus:1},dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);if(d<a.size+b.size+w.range+10){let dmg=a.power*w.bonus;if(b.weapon==='shield')dmg*=.58;const facing=(dx*(a.side?-1:1))> -a.size*.3;if(facing||d<w.range+b.size){damageBall(b,dmg);b.knock=(a.side?-1:1)*Math.min(9,dmg*.22);addLog(`${a.name}의 ${w.name} 공격! ${b.name}에게 ${Math.round(dmg)} 피해.`);a.cool=w.rate;return}}a.cool=.12}}
+function showEndSequence(winner,loser){const start=performance.now(),cx=loser.x,cy=loser.y,particles=Array.from({length:72},()=>({a:Math.random()*Math.PI*2,s:60+Math.random()*230,r:2+Math.random()*5,c:['#ffdf70','#ff5b5b','#ff8a36','#ffffff','#b45cff'][Math.floor(Math.random()*5)]}));$('battleStatus').textContent='💥 최후의 폭발!';$('battleStatus').style.color='#ffb45c';addLog(`${loser.name}의 체력이 소진됐다! 최후의 폭발!`);function frame(now){const p=Math.min(1,(now-start)/1000);draw();ctx.save();ctx.globalAlpha=1-p*.45;const radius=loser.size+220*p;const grad=ctx.createRadialGradient(cx,cy,Math.max(1,radius*.04),cx,cy,radius);grad.addColorStop(0,'#ffffff');grad.addColorStop(.2,'#fff0a6');grad.addColorStop(.52,'#ff733b');grad.addColorStop(1,'#ff2b4f00');ctx.fillStyle=grad;ctx.beginPath();ctx.arc(cx,cy,radius,0,Math.PI*2);ctx.fill();for(const q of particles){const d=q.s*p;ctx.globalAlpha=Math.max(0,1-p*.7);ctx.fillStyle=q.c;ctx.beginPath();ctx.arc(cx+Math.cos(q.a)*d,cy+Math.sin(q.a)*d,Math.max(.5,q.r*(1-p*.65)),0,Math.PI*2);ctx.fill()}ctx.restore();if(p<1){requestAnimationFrame(frame);return}draw();ctx.fillStyle='#050a12dd';ctx.fillRect(0,0,720,480);ctx.textAlign='center';ctx.fillStyle='#ffe082';ctx.font='bold 34px system-ui';ctx.fillText(`${winner.name} 승리!`,360,208);ctx.fillStyle='#ff7b8c';ctx.font='bold 27px system-ui';ctx.fillText(`${loser.name} 패배`,360,250);ctx.fillStyle='#dbe6f8';ctx.font='16px system-ui';ctx.fillText(`전투 시간 ${String(Math.floor(elapsed/60)).padStart(2,'0')}:${String(Math.floor(elapsed%60)).padStart(2,'0')}`,360,286);$('battleStatus').textContent=`🏆 ${winner.name} 승리 · ${loser.name} 패배`;$('battleStatus').style.color='#ff6878';addLog(`🏆 ${winner.name} 승리! ${loser.name} 패배!`,true)}requestAnimationFrame(frame)}
+
+function tick(t){if(!running)return;raf=requestAnimationFrame(tick);if(paused){last=t;return}if(!last)last=t;let dt=Math.min((t-last)/1000,.04);last=t;elapsed+=dt;for(const b of [player,enemy]){b.flash=Math.max(0,b.flash-dt);b.x+=b.vx*dt*14+b.knock;b.knock*=.84;b.y+=b.vy*dt*10;const minX=b.size+15,maxX=705-b.size,minY=b.size+15,maxY=465-b.size;let hitX=false,hitY=false;if(b.x<minX){b.x=minX;hitX=true}else if(b.x>maxX){b.x=maxX;hitX=true}if(b.y<minY){b.y=minY;hitY=true}else if(b.y>maxY){b.y=maxY;hitY=true}if(hitX||hitY){const speed=Math.max(1,Math.hypot(b.vx,b.vy));let angle;if(hitX&&hitY){const sx=b.x<360?1:-1,sy=b.y<240?1:-1;angle=Math.atan2(sy*(.25+Math.random()),sx*(.25+Math.random()));}else if(hitX){angle=(b.x<360?0:Math.PI)+(Math.random()-.5)*Math.PI*.8;}else{angle=(b.y<240?Math.PI/2:-Math.PI/2)+(Math.random()-.5)*Math.PI*.8;}b.vx=Math.cos(angle)*speed;b.vy=Math.sin(angle)*speed;addLog(`${b.name}이 벽에 부딪혀 랜덤한 각도로 튕겼다!`);}}
+for(const b of [player,enemy]){if(b.dashing>0&&(b.x<=b.size+16||b.x>=704-b.size||b.y<=b.size+16||b.y>=464-b.size)){b.dashing=0;const a=Math.atan2(b.vy,b.vx);b.vx=Math.cos(a)*b.speed;b.vy=Math.sin(a)*b.speed;addLog(`${b.name}의 돌진이 벽에 부딪혀 멈췄다!`);}}
+// 도윤/진복: 첫 돌진은 적을 향하고, 다음은 랜덤 방향으로 번갈아 돌진.
+for(const b of [player,enemy]){const target=b===player?enemy:player;if(b.weapon==='doyun'){if(b.dashing>0){b.dashing-=dt;if(b.dashing<=0){b.dashing=0;const a=Math.atan2(b.vy,b.vx);b.vx=Math.cos(a)*b.speed;b.vy=Math.sin(a)*b.speed;}}if(b.dashing<=0){b.specialTimer-=dt;if(b.specialTimer<=0){b.specialTimer=5;b.dashing=.65;b.color='#f7f8ff';let angle;if(b.dashCycle%2===0){angle=Math.atan2(target.y-b.y,target.x-b.x);addLog(`${b.name}의 진복 돌진! 적을 향해 돌진!`);}else{angle=b.angle;addLog(`${b.name}의 진복 돌진! 자신의 무기 방향으로 돌진!`);}b.dashCycle++;b.vx=Math.cos(angle)*42;b.vy=Math.sin(angle)*42;}}}else if(b.dashing>0){b.dashing=0;}}
+// 구형 찬영 투사체 루틴. 현재 크림빵 전투 루틴으로 대체되어 비활성화됨.
+for(const b of [player,enemy]){const target=b===player?enemy:player;if(b.weapon==='chanyoung'){b.specialTimer-=dt;if(b.specialTimer<=0){b.specialTimer=3;const dx=target.x-b.x,dy=target.y-b.y,d=Math.hypot(dx,dy)||1;for(let shot=0;shot<2;shot++){const spread=shot===0?-.045:.045,angle=Math.atan2(dy,dx)+spread;b.projectiles.push({x:b.x,y:b.y,vx:Math.cos(angle)*650,vy:Math.sin(angle)*650,life:3,split:false,damage:7,target});}addLog(`${b.name}이 레몬 2개를 연달아 던졌다!`);}}if(b.weapon==='jae'){b.slotTimer-=dt;if(b.slotSpin>0){b.slotSpin-=dt;b.slotDigits=Array.from({length:3},()=>Math.floor(Math.random()*10)).join('');if(b.slotSpin<=0){b.slotSpin=-2.001;const groupA=Math.random()<.65;let result;if(groupA){const digits=String(Math.floor(Math.random()*1000)).padStart(3,'0');const jackpot=['111','222','333','555'].includes(digits);const chips=digits==='666'?0:(jackpot?15:2+Math.floor(Math.random()*5));result={digits,chips};b.slotDigits=digits;b.chips+=chips;if(jackpot)triggerFireworks(b);addLog(`🎰 ${b.name} 슬롯 결과 ${digits}! ${digits==='666'?'유도 칩 4개 발사.':`칩 +${chips}${jackpot?' · 잭팟! 폭죽!':''}.`}`);}else{const digits=['000','444','777','999'][Math.floor(Math.random()*4)];b.slotDigits=digits;if(digits==='000'){damageBall(b,15);b.specialText='도박금지';b.specialTextTimer=.9;b.purpleTimer=.3;addLog(`🎰 ${b.name} 슬롯 결과 000! 자신에게 20 피해 · 도박금지!`);}else if(digits==='444'){b.purpleTimer=.3;addLog(`🎰 ${b.name} 슬롯 결과 444! 유도 칩 4개 발사.`);}else if(digits==='666'){v29SpawnHomingChips(b,target,4);addLog(`🎰 ${b.name} 슬롯 결과 666! 유도 칩 4개 발사.`);}else if(digits==='777'){b.chips+=20;triggerFireworks(b);healBall(b,20);addLog(`🎰 ${b.name} 슬롯 결과 777! 칩 +20 · 체력 +20 · 폭죽!`);}else{b.chips+=9;damageBall(target,9);v29SpawnHomingChips(b,target,2);addLog(`🎰 ${b.name} 슬롯 결과 999! 칩 +9 · ${target.name}에게 9 피해 · 유도 칩 2개 발사.`);}}}}else if(b.slotSpin<0){b.slotSpin-=dt;if(b.slotSpin<=-2)b.slotSpin=0;}else if(b.slotTimer<=0){b.slotTimer=5;b.slotSpin=1;addLog(`🎰 ${b.name}이 슬롯을 돌리기 시작했다!`);}b.chipFireTimer-=dt;if(b.chips>0&&b.chipFireTimer<=0){b.chipFireTimer=.1;b.chips--;const ang=Math.atan2(target.y-b.y,target.x-b.x),speed=105;b.projectiles.push({x:b.x,y:b.y,vx:Math.cos(ang)*speed,vy:Math.sin(ang)*speed,life:4,chip:true,damage:5,target});}}for(const p of b.projectiles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;if(p.chip){const ownerTarget=p.target||target;if(ownerTarget!==b&&Math.hypot(p.x-ownerTarget.x,p.y-ownerTarget.y)<ownerTarget.size+8){damageBall(ownerTarget,p.damage||5);p.life=0;addLog(`🪙 칩 명중! ${ownerTarget.name}에게 ${p.damage||5} 피해.`);}continue;}if(!p.split&&(p.x<22||p.x>698||p.y<22||p.y>458)){p.split=true;p.life=1.5;p.vx=0;p.vy=0;p.pieces=[{x:p.x,y:p.y,vx:-280,vy:-210},{x:p.x,y:p.y,vx:280,vy:210}];addLog('레몬이 벽에 부딪혀 반으로 잘렸다!');}const targetBall=p.target||player;if(p.split&&p.pieces){for(const q of p.pieces){q.x+=q.vx*dt;q.y+=q.vy*dt;if(Math.hypot(q.x-targetBall.x,q.y-targetBall.y)<targetBall.size+8&&p.life>0){damageBall(targetBall,p.damage*.5);p.life=0;addLog(`레몬 조각 명중! ${targetBall.name}에게 ${Math.round(p.damage*.5)} 피해.`);}}}else if(Math.hypot(p.x-targetBall.x,p.y-targetBall.y)<targetBall.size+12&&p.life>0){damageBall(targetBall,p.damage);p.life=0;addLog(`레몬 명중! ${targetBall.name}에게 ${p.damage} 피해.`);}}b.projectiles=b.projectiles.filter(p=>p.life>0);}
+enemy.projectiles=enemy.projectiles.filter(p=>p.life>0);
+for(const p of enemy.projectiles){if(!p.split){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(elapsed*8);ctx.fillStyle='#dfff69';ctx.strokeStyle='#f7ffb0';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,11,6,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore()}else if(p.pieces){for(const q of p.pieces){ctx.save();ctx.translate(q.x,q.y);ctx.rotate(.6);ctx.fillStyle='#dfff69';ctx.strokeStyle='#f7ffb0';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,7,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore()}}}
+// Opponents gradually face and approach each other.
+{const dx=enemy.x-player.x,dy=enemy.y-player.y,dist=Math.hypot(dx,dy)||.001,minDist=player.size+enemy.size;if(dist<minDist){const nx=dx/dist,ny=dy/dist,overlap=minDist-dist;player.x-=nx*(overlap/2+0.5);player.y-=ny*(overlap/2+0.5);enemy.x+=nx*(overlap/2+0.5);enemy.y+=ny*(overlap/2+0.5);const ps=Math.max(player.speed,Math.hypot(player.vx,player.vy)),es=Math.max(enemy.speed,Math.hypot(enemy.vx,enemy.vy));player.vx=-nx*ps;player.vy=-ny*ps;enemy.vx=nx*es;enemy.vy=ny*es;if(player.dashing>0||enemy.dashing>0){player.dashing=0;enemy.dashing=0;}addLog('두 웨폰볼이 충돌해 서로 반대 방향으로 튕겼다!');}}
+for(const b of [player,enemy]){const target=b===player?enemy:player,dist=Math.hypot(target.x-b.x,target.y-b.y);if(b.weapon==='chanyoung'||b.weapon==='jae')continue;if(b.dashing>0&&dist<b.size+target.size+10){damageBall(target,22);b.dashing=0;const a=Math.atan2(b.vy,b.vx);b.vx=Math.cos(a)*b.speed;b.vy=Math.sin(a)*b.speed;addLog(`${b.name}의 돌진 적중! ${target.name}에게 22 피해.`);}if(b.dashing<=0&&dist<b.size+target.size+weapons[b.weapon].range+10)attack(b,target,dt);} 
+ $('timer').textContent=`${String(Math.floor(elapsed/60)).padStart(2,'0')}:${String(Math.floor(elapsed%60)).padStart(2,'0')}`;for(const b of [player,enemy]){b.shakeTimer=Math.max(0,b.shakeTimer-dt);b.purpleTimer=Math.max(0,b.purpleTimer-dt);b.fireworkTimer=Math.max(0,b.fireworkTimer-dt);b.specialTextTimer=Math.max(0,b.specialTextTimer-dt);b.creamNameTimer=Math.max(0,(b.creamNameTimer||0)-dt);if(b.hpDelayTimer>0){b.hpDelayTimer-=dt;if(b.hpDelayTimer<=0)b.delayedHp=Math.max(0,b.hp);}for(const n of b.damageNumbers){n.life-=dt;n.rise+=35*dt;}b.damageNumbers=b.damageNumbers.filter(n=>n.life>0);}updateHud();if(player.hp<=0||enemy.hp<=0){running=false;const winner=player.hp>enemy.hp?player:enemy,loser=winner===player?enemy:player;showEndSequence(winner,loser);return}draw()}
+let specialFrameTime=0;function runSpecialAttacks(t){const dt=specialFrameTime?Math.min((t-specialFrameTime)/1000,.04):0;specialFrameTime=t;if(running&&!paused&&player&&enemy&&player.hp>0&&enemy.hp>0){specialCharacterTick(dt);creamBreadTick(dt);draw()}requestAnimationFrame(runSpecialAttacks)}requestAnimationFrame(runSpecialAttacks);
+ $('fight').addEventListener('click',()=>{if(!player||!enemy)create();if(player.hp<=0||enemy.hp<=0)create();if(!running){running=true;paused=false;$('battleStatus').textContent='전투 진행 중';$('pause').textContent='Ⅱ 일시정지';addLog('전투 시작!');raf=requestAnimationFrame(tick)}});
+$('reset').addEventListener('click',()=>{create();addLog('전투가 초기화됐어.')});$('pause').addEventListener('click',()=>{if(!running)return;paused=!paused;$('pause').textContent=paused?'▶ 재개':'Ⅱ 일시정지';$('battleStatus').textContent=paused?'일시정지':'전투 진행 중'});$('apply').addEventListener('click',apply);$('applyEnemy').addEventListener('click',applyEnemy);
+$('random').addEventListener('click',()=>{const colors=['#36a8ff','#ff6bc4','#8c7bff','#57e3a0','#ffb84a','#ff647c'];const keys=Object.keys(weapons);$('ballName').value=['스파크','섀도우','젤리','코멧','토네이도','루나'][Math.floor(Math.random()*6)];$('ballColor').value=colors[Math.floor(Math.random()*colors.length)];$('ballSize').value=20+Math.floor(Math.random()*24);$('power').value=5+Math.floor(Math.random()*26);$('speed').value=2+Math.floor(Math.random()*6);$('health').value=60+Math.floor(Math.random()*13)*10;$('weapon').value=keys[Math.floor(Math.random()*keys.length)];updateStats();apply();addLog('🎲 랜덤 웨폰볼을 생성했어!')});
+// V29: 2배속 전투 설정
+let v29Speed2x=false,v29LastReal=0,v29Synthetic=0;
+$('v29Speed').addEventListener('click',()=>{v29Speed2x=!v29Speed2x;$('v29Speed').textContent=v29Speed2x?'▶ 2배속 ON':'▶ 2배속 OFF'});
+const v29TickOriginal=tick;
+tick=function(t){if(!v29LastReal){v29LastReal=t;v29Synthetic=t}else{v29Synthetic+=(t-v29LastReal)*(v29Speed2x?2:1);v29LastReal=t}v29TickOriginal(v29Synthetic)};
+function v29SpawnHomingChips(b,target,count){for(let i=0;i<count;i++){const a=Math.PI*2*i/count;b.projectiles.push({x:b.x+Math.cos(a)*(b.size+8),y:b.y+Math.sin(a)*(b.size+8),vx:Math.cos(a)*190,vy:Math.sin(a)*190,life:5,chip:true,damage:5,target,v29Homing:true,purpleChip:true});}b.purpleTimer=1.15;triggerFireworks(b);addLog(`🟣 ${b.name} 소환! 보라색 유도 칩 ${count}개 발사!`)}
+let v29LastSlotResult=new WeakMap();
+function v29SlotEffects(){for(const b of [player,enemy]){if(!b||b.weapon!=='jae')continue;if(b.slotSpin===-0.001&&v29LastSlotResult.get(b)!==b.slotDigits){v29LastSlotResult.set(b,b.slotDigits);const target=b===player?enemy:player;if(b.slotDigits==='444')v29SpawnHomingChips(b,target,4);else if(b.slotDigits==='666')v29SpawnHomingChips(b,target,4);else if(b.slotDigits==='999'){healBall(b,9);damageBall(target,9);v29SpawnHomingChips(b,target,2);addLog(`🎰 ${b.name}의 999 효과: 체력 +9, 상대에게 9 피해!`)}}for(const p of b.projectiles){if(!p.v29Homing||!p.target||p.life<=0)continue;const a=Math.atan2(p.target.y-p.y,p.target.x-p.x),s=250,dx=p.target.x-p.x,dy=p.target.y-p.y,d=Math.hypot(dx,dy)||1;p.vx=(dx/d)*s;p.vy=(dy/d)*s;}}requestAnimationFrame(v29SlotEffects)}
+requestAnimationFrame(v29SlotEffects);
+// V30: 연속 칩 전멸 시 다음 슬롯 보상에 추가 칩을 누적한다.
+const v30MissState=new WeakMap();
+function v30TrackChips(){for(const b of [player,enemy]){if(!b)continue;let s=v30MissState.get(b);if(!s){s={chips:b.chips,stack:0,active:false,startHp:0,hit:false};v30MissState.set(b,s)}const target=b===player?enemy:player;const count=b.projectiles.filter(p=>p.chip).length;if(count>0&&!s.active){s.active=true;s.startHp=target.hp;s.hit=false}s.chipsNow=b.chips;if(s.active&&count===0){if(target.hp<s.startHp)s.stack=0;else{s.stack+=2;addLog(`🎰 ${b.name}의 칩이 모두 빗나갔다! 다음 발사 누적 +${s.stack}개.`)}s.active=false}s.chips=b.chips;if(b.chips>s.lastChips&&s.stack>0){const gained=b.chips-s.lastChips;b.chips+=s.stack;addLog(`🎰 빗나간 칩 누적 효과! 추가 칩 ${s.stack}개.`);s.stack=0}s.lastChips=b.chips;}requestAnimationFrame(v30TrackChips)}
+requestAnimationFrame(v30TrackChips);
+// V31: 신규 캐릭터 능력과 요청된 밸런스 패치를 통합 적용한다.
+function specialCharacterTick(dt){
+  const stamp=performance.now();if(typeof specialCharacterTick.last==='number'&&stamp-specialCharacterTick.last<5)return;specialCharacterTick.last=stamp;
+  for(const b of [player,enemy]){
+    if(!b)continue;
+    const target=b===player?enemy:player;
+    if(b.weapon==='gyeongryul'){
+      b.specialTimer-=dt;
+      if(b.mei.length===0){b.mei.push({x:b.x+(b.side?-1:1)*(b.size+12),y:b.y,size:Math.max(2,b.size-5),hp:15,life:999,target,owner:b});addLog(`🧨 ${b.name}이 체력 15의 메이를 소환했다!`)}
+      for(const m of b.mei){if(m.hp>0&&Math.hypot(target.x-m.x,target.y-m.y)<target.size+m.size){damageBall(target,13);m.hp=0;addLog('💥 메이가 적에게 닿아 자폭! 13 피해.')}}
+      b.mei=b.mei.filter(m=>m.hp>0);
+    }
+    if(b.weapon==='taeeun'){
+      b.specialTimer-=dt;
+      if(b.specialTimer<=0){b.specialTimer=7;if(Math.random()<.2){b.waterDamageBonus=0;b.specialText='불발';b.specialTextTimer=1;addLog(`🌊 ${b.name}의 물기둥 불발! 누적 강화가 모두 초기화됐다.`)}else{const angle=Math.atan2(target.y-b.y,target.x-b.x);b.waterEffects.push({life:2,age:0,owner:b,target,angle,next:0,hitCount:0});b.waterPose=2;addLog(`🌊 ${b.name}이 2초 동안 물기둥을 발사했다! 현재 누적 강화 +${b.waterDamageBonus||0}.`)}}
+      for(const e of b.waterEffects){e.life-=dt;e.age+=dt;e.next-=dt;e.angle=Math.atan2(target.y-b.y,target.x-b.x);const dx=target.x-b.x,dy=target.y-b.y,dist=Math.hypot(dx,dy),a=Math.atan2(dy,dx),diff=Math.atan2(Math.sin(a-e.angle),Math.cos(a-e.angle));if(dist<=350&&Math.abs(diff)<.19&&e.next<=0){e.hitCount=(e.hitCount||0)+1;b.waterDamageBonus=(b.waterDamageBonus||0)+1+Math.floor(Math.random()*3);const dmg=5+b.waterDamageBonus;damageBall(target,dmg);e.next=.5;addLog(`💧 물기둥 명중 ${e.hitCount}회! ${target.name}에게 ${dmg} 피해. 누적 강화 +${b.waterDamageBonus}.`)}}
+      b.waterEffects=b.waterEffects.filter(e=>e.life>0);b.waterPose=Math.max(0,(b.waterPose||0)-dt);
+    }
+    if(b.weapon==='jehwa'){
+      b.specialTimer-=dt;
+      if(b.specialTimer<=0){b.specialTimer=7;const angle=Math.atan2(target.y-b.y,target.x-b.x);b.smokeEffects.push({life:2,age:0,owner:b,target,angle,next:0});addLog(`🚬 ${b.name}이 2초간 연기를 뿌렸다!`)}
+      for(const e of b.smokeEffects){e.life-=dt;e.age+=dt;e.next-=dt;const dx=target.x-b.x,dy=target.y-b.y,dist=Math.hypot(dx,dy),a=Math.atan2(dy,dx),diff=Math.atan2(Math.sin(a-e.angle),Math.cos(a-e.angle));if(dist<=360&&Math.abs(diff)<.7&&e.age<=2&&e.next<=0){damageBall(target,5);e.next=.5;target.smokeDotTimer=3;target.smokeLabelTimer=1;b.smokeDotTarget=target;b.smokeDotTimer=3;b.smokeDotTicks=0;addLog(`🚬 연기 명중! ${target.name}에게 5 피해 및 3초간 간접흡연.`)}}
+      b.smokeEffects=b.smokeEffects.filter(e=>e.life>0);
+      if(b.smokeDotTimer>0){b.smokeDotTimer=Math.max(0,b.smokeDotTimer-dt);b.smokeDotTicks+=dt;while(b.smokeDotTicks>=1&&b.smokeDotTimer>0){b.smokeDotTicks-=1;if(b.smokeDotTarget&&b.smokeDotTarget.hp>0){damageBall(b.smokeDotTarget,4);addLog(`☁️ 간접흡연 도트 피해! ${b.smokeDotTarget.name}에게 4 피해.`)}}if(b.smokeDotTimer<=0){b.smokeDotTarget=null;b.smokeDotTicks=0;}}
+    }
+  }
+}
+function creamBreadTick(dt){
+  const stamp=performance.now();if(typeof creamBreadTick.last==='number'&&stamp-creamBreadTick.last<5)return;creamBreadTick.last=stamp;
+  for(const b of [player,enemy]){
+    if(!b||b.weapon!=='chanyoung')continue;
+    const target=b===player?enemy:player;
+    b.specialTimer=9999; // 구형 투사체 루틴 비활성화
+    b.breadShots=b.breadShots||[];b.creamTimer-=dt;
+    if(b.creamTimer<=0){b.creamTimer=3;const labels=['와','와','와','너무맛있어','꼭먹어'],step=b.creamStep%5,label=labels[step],damage=step<3?4:step===3?5:7,splitDamage=step<3?3:4;b.creamStep=(step+1)%5;b.creamName=label;b.creamNameTimer=1;const angle=Math.atan2(target.y-b.y,target.x-b.x);for(let shot=0;shot<2;shot++){const spread=shot===0?-.045:.045,a=angle+spread;b.breadShots.push({x:b.x+Math.cos(a)*(b.size+4),y:b.y+Math.sin(a)*(b.size+4),vx:Math.cos(a)*330,vy:Math.sin(a)*330,life:3,damage,splitDamage,target,split:false,pieces:[],scale:step===4?1.18:1,homing:false})}addLog(`🍞 찬영의 크림빵 공격 「${label}」! 2연발`)}
+    for(const p of b.breadShots){if(p.life<=0)continue;p.life-=dt;if(!p.split){p.x+=p.vx*dt;p.y+=p.vy*dt;if(Math.hypot(p.x-p.target.x,p.y-p.target.y)<p.target.size+12){damageBall(p.target,p.damage);p.life=0;addLog(`🍞 크림빵 명중! ${p.target.name}에게 ${p.damage} 피해.`)}else if(p.x<22||p.x>698||p.y<22||p.y>458){p.split=true;p.life=1.2;p.pieces=[{x:p.x,y:p.y,vx:-240,vy:-180,hit:false},{x:p.x,y:p.y,vx:240,vy:180,hit:false}]}}else{for(const q of p.pieces){const dx=p.target.x-q.x,dy=p.target.y-q.y,d=Math.hypot(dx,dy)||1,speed=300;q.vx=dx/d*speed;q.vy=dy/d*speed;q.x+=q.vx*dt;q.y+=q.vy*dt;if(!q.hit&&Math.hypot(q.x-p.target.x,q.y-p.target.y)<p.target.size+7){damageBall(p.target,p.splitDamage);q.hit=true;addLog(`🥐 유도 크림 조각 명중! ${p.target.name}에게 ${p.splitDamage} 피해.`)}}}}
+    b.breadShots=b.breadShots.filter(p=>p.life>0);
+  }
+}
+function drawCharacterEffects(){
+  for(const b of [player,enemy]){if(!b)continue;
+    for(const m of b.mei){ctx.fillStyle='#ffca74';ctx.strokeStyle='#fff0cb';ctx.lineWidth=2;ctx.beginPath();ctx.arc(m.x,m.y,m.size,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#38283b';ctx.font='bold 9px system-ui';ctx.textAlign='center';ctx.fillText('메이',m.x,m.y+3)}
+    for(const e of b.waterEffects){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(e.angle);ctx.globalAlpha=Math.max(0,Math.min(1,e.life/0.25));ctx.fillStyle='#049cf077';ctx.strokeStyle='#7beaff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,-25);ctx.quadraticCurveTo(150,-35,350,0);ctx.quadraticCurveTo(150,35,0,25);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()}
+    for(const e of b.smokeEffects){ctx.save();ctx.translate(b.x,b.y);ctx.rotate(e.angle);const alpha=Math.max(0,1-e.age/1.2);for(let i=0;i<22;i++){const t=i/21,d=45+t*230,spread=12+t*95,drift=Math.sin(e.age*3+i*1.7)*7;ctx.globalAlpha=alpha*(.10+t*.09);ctx.fillStyle=i%3===0?'#d6d9df':'#8e9aa9';ctx.beginPath();ctx.ellipse(d,Math.sin(i*2.4)*spread*.55+drift,12+t*15,8+t*12,Math.sin(i)*.7,0,Math.PI*2);ctx.fill()}ctx.restore()}
+  }
+}
+// 무한 사거리 공격을 제거하고, 정상 사거리 판정을 그대로 사용한다.
+const v74AttackOriginal=attack;
+attack=function(a,b,dt){if(!a||!b||!weapons[a.weapon])return;return v74AttackOriginal(a,b,dt);};
+const v74TickOriginal=tick;
+tick=function(t){const oldX=player&&player.x,oldY=player&&player.y,oldEX=enemy&&enemy.x,oldEY=enemy&&enemy.y;v74TickOriginal(t);};
+// 제화 연기 범위는 적이 멀리 있어도 적을 향해 발동한다. 글씨는 1초 동안 서서히 사라진다.
+const v74SpecialOriginal=specialCharacterTick;
+specialCharacterTick=function(dt){v74SpecialOriginal(dt);for(const b of [player,enemy])if(b){b.smokeLabelTimer=Math.max(0,(b.smokeLabelTimer||0)-dt);if(b.weapon==='jehwa'&&b.smokeDotTimer>0)b.smokeDotTimer=Math.max(0,b.smokeDotTimer-dt);}};
+function drawCreamBread(){for(const b of [player,enemy]){if(!b)continue;if(b.weapon==='chanyoung'&&b.creamNameTimer>0){const p=Math.max(0,Math.min(1,b.creamNameTimer));ctx.save();ctx.globalAlpha=p;const shake=b.creamName==='꼭먹어'?5:0;ctx.translate(b.creamName==='꼭먹어'?(Math.random()-.5)*shake:0,b.creamName==='꼭먹어'?(Math.random()-.5)*shake:0);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.shadowColor='#000';ctx.shadowBlur=3;ctx.font=`bold ${b.creamName==='와'?18:25}px system-ui`;ctx.fillText(b.creamName,b.x,b.y-b.size-38);ctx.restore()}for(const p of (b.breadShots||[])){if(p.split){for(const q of p.pieces){ctx.fillStyle='#fff';ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(q.x,q.y,7,0,Math.PI*2);ctx.fill();ctx.stroke()}}else{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.atan2(p.vy,p.vx));const sc=p.scale||1;ctx.scale(sc,sc);ctx.fillStyle='#9b633b';ctx.strokeStyle='#59351f';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,13,9,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#e6b982';ctx.beginPath();ctx.ellipse(0,-2,9,5,0,Math.PI,Math.PI*2);ctx.fill();ctx.strokeStyle='#f8dfbd';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-7,1);ctx.quadraticCurveTo(0,5,7,1);ctx.stroke();ctx.restore()}}}}
+// 제화 출석정지: 연막 발동 시 20% 확률로 3초간 행동 불가.
+const v32SpecialOriginal=specialCharacterTick;
+specialCharacterTick=function(dt){
+  for(const b of [player,enemy]){
+    if(!b)continue;
+    if((b.suspendedTimer||0)>0){b.suspendedTimer=Math.max(0,b.suspendedTimer-dt);b.specialTimer=Math.max(b.specialTimer,0.05);if(b.suspendedTimer<=0){const a=Math.random()*Math.PI*2,speed=Math.max(1,b.speed);b.vx=Math.cos(a)*speed;b.vy=Math.sin(a)*speed;b.knock=0;addLog(`🔀 ${b.name}의 출석정지가 끝났다! 랜덤한 방향으로 출발한다.`);}continue;}
+    if(b.weapon==='jehwa'&&b.specialTimer<=dt&&Math.random()<0){b.specialTimer=6;b.suspendedTimer=3;b.specialText='출석정지';b.specialTextTimer=1.2;addLog(`🚫 ${b.name}이 출석정지를 당했다! 3초간 이동과 공격이 금지된다.`);}
+  }
+  const suspended=[player,enemy].some(b=>b&&(b.suspendedTimer||0)>0);
+  if(!suspended)v32SpecialOriginal(dt);
+};
+const v32AttackOriginal=attack;
+attack=function(a,b,dt){if((a.suspendedTimer||0)>0)return;const oldPower=a.power;if(a.weapon==='doyun')a.power=6/weapons.doyun.bonus;v32AttackOriginal(a,b,dt);a.power=oldPower};
+const v32TickOriginal=tick;
+tick=function(t){
+  const frozen=[player,enemy].filter(b=>b&&(b.suspendedTimer||0)>0).map(b=>({b,x:b.x,y:b.y,vx:b.vx,vy:b.vy}));
+  v32TickOriginal(t);
+  for(const s of frozen){s.b.x=s.x;s.b.y=s.y;s.b.vx=0;s.b.vy=0;if((s.b.suspendedTimer||0)<=0){const a=Math.random()*Math.PI*2,speed=Math.max(1,s.b.speed);s.b.vx=Math.cos(a)*speed;s.b.vy=Math.sin(a)*speed;addLog(`🔀 ${s.b.name}의 출석정지가 끝났다! 랜덤한 방향으로 출발한다.`);}}
+};
+// 크림빵 발사 간격을 약 3초에서 약 2.2초로 단축한다.
+const v68CreamOriginal=creamBreadTick;
+creamBreadTick=function(dt){for(const b of [player,enemy])if(b&&b.weapon==='chanyoung')b.creamTimer-=dt*.36;v68CreamOriginal(dt)};
+// 경률: 메이 접촉 폭발 피해 15.
+// 이재: A그룹 최소 칩 3개, 칩 비행속도 소폭 증가. B그룹 000 자해 피해 10.
+const v31OriginalTick=tick,v31SeenChips=new WeakMap(),v31Boosted=new WeakSet();
+tick=function(t){const before=new Map();for(const b of [player,enemy])if(b){before.set(b,{chips:b.chips,digits:b.slotDigits,spin:b.slotSpin,projectiles:new Set(b.projectiles.filter(p=>p.chip))})}v31OriginalTick(t);for(const b of [player,enemy])if(b){const old=before.get(b);if(old&&b.weapon==='jae'&&b.slotSpin===-0.001&&old.spin!==-0.001&&b.chips-old.chips===2&&!['111','222','333','555','666','000','444','777','999'].includes(b.slotDigits)){b.chips++;addLog(`🎰 ${b.name} A그룹 최소 칩 보정: +1개.`)}if(old&&b.weapon==='jae'&&b.slotSpin===-0.001&&old.spin!==-0.001&&b.slotDigits==='000'){b.hp=Math.min(b.maxHp,b.hp+10);addLog(`🎰 ${b.name} B그룹 000 자해 피해를 10으로 조정.`)}for(const p of b.projectiles){if(p.chip&&!old?.projectiles.has(p)&&!v31Boosted.has(p)){p.vx*=1.1;p.vy*=1.1;v31Boosted.add(p)}}}};
+// 초록색 스태미나 링을 웨폰볼 주변에 표시한다.
+const v77UpdateHudOriginal=updateHud;
+updateHud=function(){v77UpdateHudOriginal();for(const [b,id] of [[player,'cool1'],[enemy,'cool2']]){if(!b)continue;let duration=1,remaining=0;if(b.weapon==='doyun'){duration=5;remaining=b.specialTimer}else if(b.weapon==='chanyoung'){duration=3;remaining=b.creamTimer}else if(b.weapon==='jae'){duration=5;remaining=b.slotTimer}else if(b.weapon==='gyeongryul'){duration=4;remaining=b.specialTimer}else if(b.weapon==='taeeun'){duration=7;remaining=b.specialTimer}else if(b.weapon==='jehwa'){duration=7;remaining=b.specialTimer}else{duration=weapons[b.weapon].rate;remaining=b.cool}$(id).style.width=(Math.max(0,Math.min(1,1-(remaining||0)/duration))*100)+'%';}};
+const v78DrawBallOriginal=drawBall;
+drawBall=function(b){v78DrawBallOriginal(b);let duration=1,remaining=0;if(b.weapon==='doyun'){duration=5;remaining=b.specialTimer}else if(b.weapon==='chanyoung'){duration=3;remaining=b.creamTimer}else if(b.weapon==='jae'){duration=5;remaining=b.slotTimer}else if(b.weapon==='gyeongryul'){duration=4;remaining=b.specialTimer}else if(b.weapon==='taeeun'){duration=7;remaining=b.specialTimer}else if(b.weapon==='jehwa'){duration=7;remaining=b.specialTimer}else{duration=weapons[b.weapon].rate;remaining=b.cool}const progress=Math.max(0,Math.min(1,1-(remaining||0)/duration));ctx.save();ctx.strokeStyle='#173323';ctx.lineWidth=5;ctx.beginPath();ctx.arc(b.x+ b.size+15,b.y-8,9,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#48f47d';ctx.lineWidth=3.5;ctx.lineCap='round';ctx.shadowColor='#48f47d';ctx.shadowBlur=7;ctx.beginPath();ctx.arc(b.x+b.size+15,b.y-8,9,-Math.PI/2,-Math.PI/2+Math.PI*2*progress);ctx.stroke();ctx.restore();};
+updateStats();
+create();
+// 특수 효과는 draw() 안에서만 그려 중복 누적 렌더링을 방지한다.
+function specialLoop(){requestAnimationFrame(specialLoop)}requestAnimationFrame(specialLoop);
+// 추가 캐릭터: 찬혁 분신은 독립적으로 이동·충돌하고, 현인사토루는 보라 구체, 건호 레이저는 5 피해.
+const v85CharacterOptions={chanhyeok:{name:'찬혁',range:58,rate:1,bonus:1,icon:'👥'},hyeoninsatoru:{name:'현인사토루',range:0,rate:1,bonus:1,icon:'🟣'},geonho:{name:'건호',range:0,rate:1,bonus:1,icon:'🔫'}};
+Object.assign(weapons,v85CharacterOptions);
+for(const id of ['weapon','enemyWeapon']){const sel=$(id);for(const [value,w] of Object.entries(v85CharacterOptions)){if(!Array.from(sel.options).some(o=>o.value===value)){const opt=document.createElement('option');opt.value=value;opt.textContent=w.icon+' '+w.name;sel.appendChild(opt)}}}
+let v85Clones=[],v85Orbs=[],v85CloneCount=0,v85LastTickTime=0;
+const v85CreateOriginal=create;
+create=function(){v85CreateOriginal();v85Clones=[];v85Orbs=[];v85CloneCount=0;for(const b of [player,enemy])if(b){b.v85CloneTimer=15;b.v85OrbTimer=0;b.v85LaserTimer=0;if(b.weapon==='hyeoninsatoru')v85LaunchOrb(b,b===player?enemy:player)}};
+function v85LaunchOrb(owner,target){const dx=target.x-owner.x,dy=target.y-owner.y,d=Math.hypot(dx,dy)||1;v85Orbs.push({x:owner.x,y:owner.y,vx:dx/d*280,vy:dy/d*280,owner,target,life:5})}
+const v85TickOriginal=tick;
+tick=function(t){if(!running)return;const dt=v85LastTickTime?Math.min((t-v85LastTickTime)/1000,.04):0;v85LastTickTime=t;v85TickOriginal(t);if(!running||paused)return;
+  for(const b of [player,enemy]){if(!b)continue;if(b.weapon==='chanhyeok'){b.v85CloneTimer-=dt;if(b.v85CloneTimer<=0){b.v85CloneTimer=15*(++v85CloneCount+1);const a=Math.random()*Math.PI*2,c=makeBall({...b,name:'찬혁 분신 '+v85CloneCount,size:b.size,maxHp:b.maxHp,weapon:'chanhyeok'},b.x,b.y,b.side);c.hp=b.hp;c.maxHp=b.maxHp;c.vx=Math.cos(a)*Math.max(3,b.speed);c.vy=Math.sin(a)*Math.max(3,b.speed);c.isV85Clone=true;c.owner=b;v85Clones.push(c);addLog('👥 찬혁이 독립 분신을 소환했다!')}}if(b.weapon==='hyeoninsatoru'){b.v85OrbTimer-=dt;if(b.v85OrbTimer<=0){b.v85OrbTimer=4;v85LaunchOrb(b,b===player?enemy:player)}}if(b.weapon==='geonho'){b.v85LaserTimer-=dt;if(b.v85LaserTimer<=0){b.v85LaserTimer=2;const target=b===player?enemy:player;damageBall(target,5);target.specialText='건호 레이저 -5';target.specialTextTimer=.8;addLog('🔫 건호 레이저 명중! 상대에게 5 피해.')}}}
+  for(const c of v85Clones){if(c.hp<=0)continue;c.x+=c.vx*dt*14;c.y+=c.vy*dt*10;const minX=c.size+15,maxX=705-c.size,minY=c.size+15,maxY=465-c.size;if(c.x<minX||c.x>maxX){c.vx=-c.vx;c.x=Math.max(minX,Math.min(maxX,c.x))}if(c.y<minY||c.y>maxY){c.vy=-c.vy;c.y=Math.max(minY,Math.min(maxY,c.y))}for(const other of [player,enemy,...v85Clones]){if(!other||other===c)continue;const dx=other.x-c.x,dy=other.y-c.y,d=Math.hypot(dx,dy)||1;if(d<c.size+other.size){c.vx=-c.vx;c.vy=-c.vy;c.x-=dx/d*2;c.y-=dy/d*2}}const target=c.side===player.side?enemy:player;if(target&&Math.hypot(target.x-c.x,target.y-c.y)<c.size+target.size+weapons.chanhyeok.range+10)attack(c,target,dt)}
+  for(const o of v85Orbs){o.life-=dt;const dx=o.target.x-o.x,dy=o.target.y-o.y,d=Math.hypot(dx,dy)||1;o.vx=dx/d*280;o.vy=dy/d*280;o.x+=o.vx*dt;o.y+=o.vy*dt;if(d<o.target.size+10){damageBall(o.target,12);o.life=0;addLog('🟣 현인사토루의 보라 구체 명중! 12 피해.')}}v85Orbs=v85Orbs.filter(o=>o.life>0);
+};
+const v85DrawOriginal=draw;
+draw=function(){v85DrawOriginal();if(running){for(const c of v85Clones){if(c.hp>0){drawBall(c);ctx.save();ctx.fillStyle='#fff';ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillText(c.name,c.x,c.y-c.size-10);ctx.restore()}}for(const o of v85Orbs){ctx.save();ctx.fillStyle='#b66cff';ctx.shadowColor='#9e45ff';ctx.shadowBlur=18;ctx.beginPath();ctx.arc(o.x,o.y,13,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#f0d6ff';ctx.lineWidth=3;ctx.stroke();ctx.restore()}}};
+// V73: 특수 캐릭터 이름이 전투 화면에서 항상 보이도록 표시한다.
+const v73DrawOriginal=draw;
+draw=function(){v73DrawOriginal();for(const b of [player,enemy]){if(!b||!['gyeongryul','taeeun','jehwa'].includes(b.weapon))continue;ctx.save();ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';const label=weapons[b.weapon].icon+' '+weapons[b.weapon].name;const y=b.y-b.size-24;const width=ctx.measureText(label).width+16;ctx.fillStyle='#07101dcc';ctx.beginPath();ctx.roundRect(b.x-width/2,y-12,width,24,8);ctx.fill();ctx.fillStyle='#ffffff';ctx.shadowColor='#000000';ctx.shadowBlur=4;ctx.fillText(label,b.x,y);ctx.restore();}};
+// 신규 캐릭터: 무한 체력 샌드백.
+weapons.sandbag={name:'샌드백',range:0,rate:999999,bonus:1,icon:'🧱'};
+for(const id of ['weapon','enemyWeapon']){const select=$(id);if(select&&!select.querySelector('option[value="sandbag"]')){select.insertAdjacentHTML('beforeend','<option value="sandbag">🧱 샌드백 — 무한 체력</option>')}}
+// 샌드백 전용 기능. 재원 캐릭터와 관련된 코드는 제거됨.
+const sandbagCreateOriginal=create;create=function(){sandbagCreateOriginal();for(const b of [player,enemy])if(b&&b.weapon==='sandbag'){b.name='샌드백';b.color='#b6a99a';b.hp=Infinity;b.maxHp=Infinity;b.delayedHp=Infinity;b.sandbagDamage=0;b.speed=Math.max(1,b.speed||1);const a=Math.random()*Math.PI*2;b.vx=Math.cos(a)*b.speed;b.vy=Math.sin(a)*b.speed;}updateHud();draw();};
+const sandbagDamageOriginal=damageBall;
+damageBall=function(b,amount){if(b&&b.weapon==='sandbag'){b.sandbagDamage=(b.sandbagDamage||0)+Math.max(0,Math.round(amount));b.damageNumbers.push({amount:Math.round(amount),life:1.05,rise:0,offsetX:(Math.random()-.5)*b.size*1.8,offsetY:(Math.random()-.5)*b.size*.8});return;}sandbagDamageOriginal(b,amount);};
+const sandbagAttackOriginal=attack;
+attack=function(a,b,dt){if(!a||a.weapon==='sandbag')return;sandbagAttackOriginal(a,b,dt);};
+const sandbagTickOriginal=tick;
+tick=function(t){sandbagTickOriginal(t);if(!running||paused||!player||!enemy)return;for(const b of [player,enemy])if(b&&b.weapon==='sandbag'){b.hp=Infinity;b.maxHp=Infinity;b.delayedHp=Infinity;}};
+const sandbagDrawBallOriginal=drawBall;
+drawBall=function(b){if(b&&b.weapon==='sandbag'){ctx.save();ctx.fillStyle='#a89b8e';ctx.strokeStyle='#e6d9cb';ctx.lineWidth=3;ctx.beginPath();ctx.roundRect(b.x-b.size*.8,b.y-b.size,b.size*1.6,b.size*2,10);ctx.fill();ctx.stroke();ctx.fillStyle='#201b19';ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.fillText('샌드백',b.x,b.y+4);ctx.fillStyle='#fff0d9';ctx.font='bold 15px system-ui';ctx.fillText(`누적 피해 ${b.sandbagDamage||0}`,b.x,b.y-b.size-20);ctx.restore();for(const n of b.damageNumbers){ctx.save();ctx.globalAlpha=Math.max(0,n.life/1.05);ctx.fillStyle='#ff414b';ctx.font='bold 27px system-ui';ctx.textAlign='center';ctx.fillText(`-${n.amount}`,b.x+n.offsetX,b.y-b.size-18-n.rise+n.offsetY);ctx.restore();}return;}sandbagDrawBallOriginal(b);};
+const sandbagHudOriginal=updateHud;
+updateHud=function(){sandbagHudOriginal();for(const b of [player,enemy])if(b&&b.weapon==='sandbag')$(b===player?'leftName':'rightName').textContent=`🧱 샌드백 · ∞ HP · 누적 피해 ${b.sandbagDamage||0}`;};
+// 태은: 물기둥의 누적 데미지 증가량을 매회 1로 고정한다.
+const taeeunFixedGrowthOriginal=specialCharacterTick;
+specialCharacterTick=function(dt){const old=new Map([player,enemy].filter(Boolean).map(b=>[b,b.waterDamageBonus||0]));taeeunFixedGrowthOriginal(dt);for(const b of [player,enemy])if(b&&b.weapon==='taeeun'){const before=old.get(b)||0,after=b.waterDamageBonus||0;if(after>before)b.waterDamageBonus=before+1;}};
+// 재원 리워크: 10초마다 세 형태 중 하나로 각성하고 해당 기술을 즉시 1회 발동한다.
+weapons.jaewon={name:'재원',range:0,rate:1,bonus:1,icon:'✨'};
+for(const id of ['weapon','enemyWeapon']){const s=$(id);if(s&&!s.querySelector('option[value="jaewon"]'))s.insertAdjacentHTML('beforeend','<option value="jaewon">✨ 재원 — 10초마다 각성</option>');}
+const jaewonCreateOriginal=create;
+create=function(){jaewonCreateOriginal();for(const b of [player,enemy])if(b&&b.weapon==='jaewon'){b.jaewonCooldown=10;b.jaewonForm='';b.jaewonProjectiles=[];b.jaewonMeleeTimer=0;b.jaewonSkillTimer=0;b.jaewonAntTimer=0;b.jaewonWakeText=0;b.jaewonWakeSize=34;}};
+function jaewonFireForm(b,target){b.jaewonForm=['malatang','rinse','ant'][Math.floor(Math.random()*3)];b.jaewonWakeText=1;const labels={malatang:'마라탕',rinse:'린스',ant:'개미'};b.jaewonSkillName=labels[b.jaewonForm];b.jaewonMeleeTimer=0;b.jaewonSkillTimer=0;b.jaewonAntTimer=0;addLog(`✨ 재원 각성! ${b.jaewonSkillName} 형태로 변신!`);jaewonUseSkill(b,target,true);}
+function jaewonUseSkill(b,target,instant=false){if(!b||!target||!b.jaewonForm)return;if(b.jaewonForm==='malatang'){const dx=target.x-b.x,dy=target.y-b.y,d=Math.hypot(dx,dy);if(d<b.size+target.size+88){damageBall(target,7);addLog(`🥣 마라탕 면 휘두르기! ${target.name}에게 7 피해.`)}b.jaewonSkillTimer=3;}else if(b.jaewonForm==='rinse'){for(let i=0;i<8;i++){const a=Math.PI*2*i/8;b.jaewonProjectiles.push({kind:'rinse',x:b.x+Math.cos(a)*(b.size+5),y:b.y+Math.sin(a)*(b.size+5),vx:Math.cos(a)*175,vy:Math.sin(a)*175,life:3,damage:5,r:5,target});}b.jaewonSkillTimer=4;addLog(`🧼 린스 발동! 하얀 원 8개를 발사.`);}else{const a=Math.atan2(target.y-b.y,target.x-b.x);b.jaewonProjectiles.push({kind:'ant',x:b.x+Math.cos(a)*(b.size+5),y:b.y+Math.sin(a)*(b.size+5),vx:Math.cos(a)*38,vy:Math.sin(a)*38,life:8,damage:7,r:Math.max(9,b.size*.42),target});b.jaewonAntTimer=1;addLog(`🐜 개미 소환! 적을 추적한다.`)}}
+const jaewonSpecialOriginal=specialCharacterTick;
+specialCharacterTick=function(dt){jaewonSpecialOriginal(dt);if(!running||paused)return;for(const b of [player,enemy]){if(!b||b.weapon!=='jaewon')continue;const target=b===player?enemy:player;b.jaewonWakeText=Math.max(0,(b.jaewonWakeText||0)-dt);b.jaewonCooldown=Math.max(0,(b.jaewonCooldown??10)-dt);b.jaewonSkillTimer=Math.max(0,(b.jaewonSkillTimer||0)-dt);b.jaewonAntTimer=Math.max(0,(b.jaewonAntTimer||0)-dt);if(b.jaewonCooldown<=0){b.jaewonCooldown=10;jaewonFireForm(b,target);}if(b.jaewonForm==='malatang'&&b.jaewonSkillTimer<=0)jaewonUseSkill(b,target);if(b.jaewonForm==='rinse'&&b.jaewonSkillTimer<=0)jaewonUseSkill(b,target);if(b.jaewonForm==='ant'&&b.jaewonAntTimer<=0)jaewonUseSkill(b,target);for(const p of b.jaewonProjectiles){p.life-=dt;if(p.kind==='ant'&&p.target&&p.target.hp>0){const dx=p.target.x-p.x,dy=p.target.y-p.y,d=Math.hypot(dx,dy)||1,s=48;p.vx=dx/d*s;p.vy=dy/d*s;}p.x+=p.vx*dt;p.y+=p.vy*dt;if(p.target&&Math.hypot(p.target.x-p.x,p.target.y-p.y)<p.target.size+p.r){damageBall(p.target,p.damage);p.life=0;addLog(`${p.kind==='ant'?'🐜 개미':'⚪ 린스 원'} 명중! ${p.target.name}에게 ${p.damage} 피해.`);}}b.jaewonProjectiles=b.jaewonProjectiles.filter(p=>p.life>0);}};
+const jaewonDrawBallOriginal=drawBall;
+drawBall=function(b){jaewonDrawBallOriginal(b);if(!b||b.weapon!=='jaewon')return;const item={malatang:'🥣',rinse:'🧼',ant:'💐'}[b.jaewonForm]||'✨';ctx.save();ctx.font='bold 23px system-ui';ctx.textAlign='center';ctx.fillText(item,b.x,b.y+b.size+25);if(b.jaewonSkillName){ctx.font='bold 14px system-ui';ctx.fillStyle='#ffffff';ctx.fillText(b.jaewonSkillName,b.x,b.y+b.size+44);}if(b.jaewonWakeText>0){ctx.globalAlpha=Math.min(1,b.jaewonWakeText);ctx.fillStyle='#fff1a8';ctx.strokeStyle='#542b99';ctx.lineWidth=4;ctx.font='bold 34px system-ui';ctx.lineJoin='round';ctx.strokeText('재원 각성',b.x,b.y-b.size-48);ctx.fillText('재원 각성',b.x,b.y-b.size-48);}ctx.restore();for(const p of b.jaewonProjectiles||[]){ctx.save();if(p.kind==='ant'){ctx.font='22px system-ui';ctx.textAlign='center';ctx.fillText('🐜',p.x,p.y+7)}else{ctx.fillStyle='#fff';ctx.strokeStyle='#d9e8ff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();ctx.stroke()}ctx.restore();}};
+const jaewonHudOriginal=updateHud;
+updateHud=function(){jaewonHudOriginal();for(const [b,id] of [[player,'cool1'],[enemy,'cool2']])if(b&&b.weapon==='jaewon')$(id).style.width=(Math.max(0,Math.min(1,1-(b.jaewonCooldown??10)/10))*100)+'%';};
+const jaewonDrawOriginal=draw;
+draw=function(){jaewonDrawOriginal();for(const b of [player,enemy])if(b&&b.weapon==='jaewon')for(const p of b.jaewonProjectiles||[]){ctx.save();if(p.kind==='ant'){ctx.font='22px system-ui';ctx.textAlign='center';ctx.fillText('🐜',p.x,p.y+7)}else{ctx.fillStyle='#fff';ctx.strokeStyle='#d9e8ff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();ctx.stroke()}ctx.restore();}};
+// 신규 캐릭터 5종을 선택 목록과 전투 로직에 추가한다.
+const v85NewCharacters={minjae:{name:'민재',icon:'🕳️',color:'#b8a07a'},jeongwon:{name:'정원',icon:'🇰🇷',color:'#f3f4f6'},hyunin:{name:'현인',icon:'🗡️',color:'#8f9cff'},chanhyeok:{name:'찬혁',icon:'🔫',color:'#ffb84a'},geonho:{name:'건호',icon:'🔴',color:'#9ce7ff'}};
+for(const id of ['weapon','enemyWeapon']){const sel=$(id);for(const [key,c] of Object.entries(v85NewCharacters)){if(!Array.from(sel.options).some(o=>o.value===key)){const opt=document.createElement('option');opt.value=key;opt.textContent=c.icon+' '+c.name+' — 특수 능력';sel.appendChild(opt)}}}
+const v85CreateOriginalLater=create;
+create=function(){v85CreateOriginalLater();for(const b of [player,enemy]){if(!b)continue;const c=v85NewCharacters[b.weapon];if(c){b.name=c.name;b.color=c.color;b.minjaeTimer=10;b.burrowTimer=0;b.underground=false;b.jeongwonTimer=7;b.rallyTimer=0;b.rallyPrevDist=null;b.hyuninTimer=7;b.stealthTimer=0;b.stealth=false;b.chanhyeokShotTimer=5;b.cloneTimer=10;b.clones=[];b.geonhoTimer=1;b.wordIndex=0;b.wordSet=Math.floor(Math.random()*4);b.laserTimer=0;b.laserTarget=null}}updateHud();draw()};
+const v85DamageOriginal=damageBall;
+damageBall=function(b,amount){if(b&&b.underground)return;if(b&&b.cloneOwner){v85DamageOriginal(b.cloneOwner,amount*.3);return}if(b&&b.weapon==='hyunin'&&b.stealth){b.stealth=false;b.stealthTimer=0;b.vx=-b.vx;b.vy=-b.vy;b.specialText='은신 해제';b.specialTextTimer=.7}v85DamageOriginal(b,amount)};
+const v85AttackOriginal=attack;
+attack=function(a,b,dt){if(!a||!b)return;if(['minjae','jeongwon','hyunin','chanhyeok','geonho'].includes(a.weapon))return;if((a.suspendedTimer||0)>0)return;v85AttackOriginal(a,b,dt)};
+const v85SpecialOriginal=specialCharacterTick;
+specialCharacterTick=function(dt){v85SpecialOriginal(dt);for(const b of [player,enemy]){if(!b)continue;const target=b===player?enemy:player;const dist=Math.hypot(target.x-b.x,target.y-b.y);
+if(b.weapon==='minjae'){b.minjaeTimer-=dt;if(!b.underground&&b.minjaeTimer<=0){b.underground=true;b.burrowTimer=2;b.specialText='땅속 잠복';b.specialTextTimer=.8;addLog('🕳️ 민재가 땅속으로 들어갔다!')}if(b.underground){b.burrowTimer-=dt;const a=Math.atan2(target.y-b.y,target.x-b.x);b.vx=Math.cos(a)*Math.max(3,b.speed*1.2);b.vy=Math.sin(a)*Math.max(3,b.speed*1.2);if(b.burrowTimer<=0){b.underground=false;b.minjaeTimer=10;b.specialText='땅굴 돌파!';b.specialTextTimer=.8;if(dist<b.size+target.size+32){damageBall(target,30);addLog(`🕳️ 민재가 땅굴에서 튀어나와 ${target.name}에게 30 피해!`)}for(let i=0;i<8;i++){const a=i*Math.PI/4;b.projectiles.push({x:b.x,y:b.y,vx:Math.cos(a)*260,vy:Math.sin(a)*260,life:1.7,damage:10,target,earth:true})}addLog('🪨 민재가 8방향으로 흙더미를 던졌다!')}}}
+if(b.weapon==='jeongwon'){b.jeongwonTimer-=dt;if(b.jeongwonTimer<=0&&b.rallyTimer<=0){b.rallyTimer=2;b.jeongwonTimer=7;b.rallyPrevDist=Math.hypot(target.x-b.x,target.y-b.y);addLog('🇰🇷 정원이 2초간 집결 상태에 돌입했다!')}if(b.rallyTimer>0){b.rallyTimer=Math.max(0,b.rallyTimer-dt);const d=Math.hypot(target.x-b.x,target.y-b.y),r=85;if(b.rallyPrevDist!==null&&((b.rallyPrevDist<r&&d>=r)||(b.rallyPrevDist>=r&&d<r))){if(b.rallyTimer>0){b.specialText=d<b.rallyPrevDist?'애국':'매국';b.specialTextTimer=1;if(b.specialText==='매국'){damageBall(target,15);addLog(`🇰🇷 매국! ${target.name}에게 15 피해.`)}else addLog('🇰🇷 애국! 피해 없이 통과했다.')}}b.rallyPrevDist=d}else b.rallyPrevDist=null}
+if(b.weapon==='hyunin'){b.hyuninTimer-=dt;if(!b.stealth&&b.hyuninTimer<=0){b.stealth=true;b.stealthTimer=0;b.specialText='은신';b.specialTextTimer=.8;addLog('🗡️ 현인이 은신했다!')}if(b.stealth){b.stealthTimer+=dt;const a=Math.atan2(target.y-b.y,target.x-b.x);b.vx=Math.cos(a)*Math.max(2,b.speed*1.15);b.vy=Math.sin(a)*Math.max(2,b.speed*1.15);if(dist<b.size+target.size+4){damageBall(target,10);b.stealth=false;b.hyuninTimer=7;b.specialText='베기!';b.specialTextTimer=.8;b.vx=-Math.cos(a)*b.speed;b.vy=-Math.sin(a)*b.speed;target.slashEffect=0.25;addLog(`🗡️ 현인의 기습! ${target.name}에게 10 피해.`)}}}
+if(b.weapon==='chanhyeok'){b.chanhyeokShotTimer-=dt;if(b.chanhyeokShotTimer<=0){b.chanhyeokShotTimer=5;const a=Math.atan2(target.y-b.y,target.x-b.x);b.projectiles.push({x:b.x,y:b.y,vx:Math.cos(a)*500,vy:Math.sin(a)*500,life:3,damage:5,target,bullet:true});addLog('🔫 찬혁이 총알을 발사했다!')}b.cloneTimer-=dt;if(b.cloneTimer<=0){b.cloneTimer=10;const names=['이현서','멜로챈트','700\'','총촙-패드','총초보'];const used=new Set((b.clones||[]).map(c=>c.name));const available=names.filter(n=>!used.has(n));if(available.length){const name=available[Math.floor(Math.random()*available.length)],a=Math.random()*Math.PI*2;b.clones.push({name,x:b.x+Math.cos(a)*35,y:b.y+Math.sin(a)*35,vx:0,vy:0,cloneOwner:b,size:Math.max(12,b.size*.72)});addLog(`👥 찬혁이 ${name} 분신을 소환했다!`)}}for(const c of b.clones||[]){const a=Math.atan2(target.y-c.y,target.x-c.x);c.vx=Math.cos(a)*Math.max(2,b.speed*.85);c.vy=Math.sin(a)*Math.max(2,b.speed*.85);c.x+=c.vx*dt*8;c.y+=c.vy*dt*8;if(Math.hypot(target.x-c.x,target.y-c.y)<target.size+c.size){damageBall(target,2);c.x=b.x+(Math.random()-.5)*b.size*2;c.y=b.y+(Math.random()-.5)*b.size*2}}}
+if(b.weapon==='geonho'){const words=[['민들레','레미콘','콘푸로스트','트자','자리낏'],['사과','과일','일본어','어해','해질녘'],['국어','어명','명확','확진','진흙'],['우유','유세','세무','무진','진화유진기본코스튬']];b.geonhoTimer-=dt;if(b.geonhoTimer<=0){b.geonhoTimer=1;const set=words[b.wordSet];b.wordIndex++;if(b.wordIndex>=set.length){b.wordIndex=0;b.wordSet=Math.floor(Math.random()*words.length);b.laserTimer=2;b.laserTarget=target;addLog(`🔴 건호의 레이저 발사! ${target.name}을 조준한다.`)}else addLog(`🔴 건호: ${set[b.wordIndex-1]}`)}if(b.laserTimer>0){b.laserTimer=Math.max(0,b.laserTimer-dt);if(b.laserTarget&&b.laserTarget.hp>0){damageBall(b.laserTarget,5*dt);b.laserTarget.specialText='레이저';b.laserTarget.specialTextTimer=.15}}}
+}}
+const v85TickOriginalLater=tick;
+tick=function(t){v85TickOriginalLater(t);for(const b of [player,enemy]){if(!b)continue;if(b.underground){b.x=Math.max(b.size+15,Math.min(705-b.size,b.x+b.vx*.45));b.y=Math.max(b.size+15,Math.min(465-b.size,b.y+b.vy*.45))}for(const c of b.clones||[]){if(c.x<20||c.x>700||c.y<20||c.y>460){c.x=b.x+(Math.random()-.5)*b.size*2;c.y=b.y+(Math.random()-.5)*b.size*2}}}};
+const v85DrawBallOriginal=drawBall;
+drawBall=function(b){if(!b)return;if(b.underground){ctx.save();ctx.globalAlpha=.35;ctx.fillStyle='#b9a17c';ctx.beginPath();ctx.ellipse(b.x,b.y,b.size*1.2,b.size*.45,0,0,Math.PI*2);ctx.fill();ctx.restore()}else{v85DrawBallOriginal(b);if(b.weapon==='hyunin'&&b.stealth){ctx.save();ctx.globalAlpha=.28;ctx.fillStyle=b.color;ctx.beginPath();ctx.arc(b.x,b.y,b.size,0,Math.PI*2);ctx.fill();ctx.restore()}}if(b.weapon==='jeongwon'&&b.rallyTimer>0){ctx.save();ctx.strokeStyle='#f4d35e';ctx.lineWidth=4;ctx.setLineDash([8,5]);ctx.beginPath();ctx.arc(b.x,b.y,85,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore()}if(b.weapon==='geonho'&&b.laserTimer>0&&b.laserTarget){ctx.save();ctx.strokeStyle='#ff3d5a';ctx.lineWidth=8;ctx.shadowColor='#ff1738';ctx.shadowBlur=18;ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.laserTarget.x,b.laserTarget.y);ctx.stroke();ctx.restore()}};
+const v85DrawEffectsOriginal=drawCharacterEffects;
+drawCharacterEffects=function(){v85DrawEffectsOriginal();for(const b of [player,enemy]){if(!b)continue;for(const c of b.clones||[]){ctx.save();ctx.globalAlpha=.82;ctx.fillStyle='#ffc45e';ctx.strokeStyle='#fff0c4';ctx.lineWidth=2;ctx.beginPath();ctx.arc(c.x,c.y,c.size,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#222';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText(c.name,c.x,c.y-c.size-8);ctx.restore()}}};
+// V86: requested fixes for the five custom characters.
+const v86SpecialBase=specialCharacterTick;
+specialCharacterTick=function(dt){
+  for(const b of [player,enemy]){
+    if(!b)continue;
+    if(b.weapon==='jeongwon'&&b.rallyTimer>1.5)b.rallyTimer=1.5;
+  }
+  v86SpecialBase(dt);
+  for(const b of [player,enemy])if(b&&b.weapon==='minjae'&&b.underground){b.vx=0;b.vy=0;}
+};
+const v86DrawBallBase=drawBall;
+drawBall=function(b){
+  if(!b)return;
+  if(b.weapon==='hyunin'&&b.stealth){ctx.save();ctx.globalAlpha=.28;v78DrawBallOriginal(b);ctx.restore();}
+  else if(b.underground){ctx.save();ctx.globalAlpha=.35;ctx.fillStyle='#8b5a2b';ctx.beginPath();ctx.ellipse(b.x,b.y+10,b.size+8,10,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+  else v78DrawBallOriginal(b);
+  if(b.weapon==='jeongwon'&&b.rallyTimer>0){ctx.save();ctx.strokeStyle='#ff3030';ctx.lineWidth=4;ctx.beginPath();ctx.arc(b.x,b.y,85,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#e5222a';ctx.font='bold 25px system-ui';ctx.textAlign='center';ctx.fillText('🚩',b.x,b.y-b.size-34);ctx.fillStyle='#fff';ctx.font='bold 16px system-ui';ctx.strokeStyle='#111';ctx.lineWidth=3;ctx.strokeText('집결',b.x,b.y-b.size-56);ctx.fillText('집결',b.x,b.y-b.size-56);ctx.restore();}
+  if(b.weapon==='jeongwon'&&(b.specialText==='애국'||b.specialText==='매국')&&b.specialTextTimer>0){ctx.save();ctx.font='bold 22px system-ui';ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='#111';ctx.fillStyle=b.specialText==='애국'?'#58ff86':'#ff5c68';ctx.strokeText(b.specialText,b.x,b.y-b.size-108);ctx.fillText(b.specialText,b.x,b.y-b.size-108);ctx.restore();}
+  if(b.slashEffect>0){ctx.save();ctx.strokeStyle='#f7fbff';ctx.lineWidth=7;ctx.shadowColor='#9de7ff';ctx.shadowBlur=14;ctx.beginPath();ctx.moveTo(b.x-28,b.y-22);ctx.lineTo(b.x+28,b.y+22);ctx.moveTo(b.x-25,b.y+20);ctx.lineTo(b.x+25,b.y-20);ctx.stroke();ctx.restore();b.slashEffect=Math.max(0,b.slashEffect-.016);}
+};
+const v86CreateBase=create;
+create=function(){v86CreateBase();for(const b of [player,enemy])if(b){if(b.weapon==='jeongwon')b.jeongwonTimer=7;if(b.weapon==='chanhyeok')b.cloneTimer=15;}};
+// Keep clone names stable and remove every clone when Chanhyeok is defeated.
+const v86TickBase=tick;
+tick=function(t){const before=new Map([player,enemy].filter(Boolean).map(b=>[b,(b.clones||[]).length]));v86TickBase(t);for(const b of [player,enemy])if(b&&b.weapon==='chanhyeok'){if(b.hp<=0)b.clones=[];for(const c of b.clones||[]){c.name=c.name||'총초보';c.size=c.size||Math.max(12,b.size*.72);}if((b.clones||[]).length>(before.get(b)||0))b.cloneTimer=15;}};
+// Show Geonho's complete word-chain beneath the ball and use 3 damage per 0.5 seconds.
+const v86SpecialBase2=specialCharacterTick;
+specialCharacterTick=function(dt){v86SpecialBase2(dt);for(const b of [player,enemy])if(b&&b.weapon==='geonho'&&b.laserTimer>0&&b.laserTarget){b.laserDamageTimer=(b.laserDamageTimer||0)+dt;while(b.laserDamageTimer>=.5){b.laserDamageTimer-=.5;damageBall(b.laserTarget,3);}}};
+const v86DrawBase=draw;
+draw=function(){v86DrawBase();for(const b of [player,enemy]){if(!b)continue;if(b.weapon==='geonho'&&b.wordSet!==undefined){const sets=[['민들레','레미콘','콘푸로스트','트자','자리낏'],['사과','과일','일본어','어해','해질녘'],['국어','어명','명확','확진','진흙'],['우유','유세','세무','무진','진화유진기본코스튬']];const words=sets[b.wordSet]||sets[0];const shown=words.slice(0,Math.max(1,b.wordIndex||1)).join(' → ');ctx.save();ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#111';ctx.fillStyle='#fff';ctx.strokeText(shown,b.x,b.y+b.size+28);ctx.fillText(shown,b.x,b.y+b.size+28);ctx.restore();}}};
+// V114: fix rally resolution, clone ranged attacks, and Geonho laser ticks.
+const v114SpecialBase=specialCharacterTick;
+specialCharacterTick=function(dt){
+  const masked=[];
+  for(const b of [player,enemy])if(b&&b.weapon==='jeongwon'){masked.push([b,b.weapon]);b.weapon='__jeongwon_resolved__';}
+  v114SpecialBase(dt);
+  for(const [b,w] of masked)b.weapon=w;
+  for(const b of [player,enemy]){
+    if(!b)continue;
+    const target=b===player?enemy:player;
+    if(b.weapon==='jeongwon'){
+      if(b.jeongwonTimer===undefined)b.jeongwonTimer=7;
+      b.jeongwonTimer-=dt;
+      if(b.rallyTimer<=0&&b.jeongwonTimer<=0){b.rallyTimer=1.5;b.rallyEntered=false;b.rallyPrevDist=Math.hypot(target.x-b.x,target.y-b.y);b.jeongwonTimer=7;addLog('🇰🇷 정원이 집결을 시작했다! 1.5초 동안 원 안으로 들어오면 애국.');}
+      if(b.rallyTimer>0){b.rallyTimer=Math.max(0,b.rallyTimer-dt);if(Math.hypot(target.x-b.x,target.y-b.y)<=85)b.rallyEntered=true;if(b.rallyTimer<=0){if(b.rallyEntered){b.specialText='애국';addLog('🇰🇷 애국! 상대가 집결 원 안으로 들어왔다.');}else{b.specialText='매국';damageBall(target,15);addLog(`🇰🇷 매국! ${target.name}이 집결 원에 들어오지 못해 15 피해.`);}b.specialTextTimer=1.2;b.rallyPrevDist=null;}}
+    }
+    if(b.weapon==='chanhyeok'){
+      b.cloneShotTimer=(b.cloneShotTimer||0)-dt;
+      for(const c of b.clones||[]){
+        if(c.hp<=0)continue;
+        c.cloneShotTimer=(c.cloneShotTimer||0)-dt;
+        if(c.cloneShotTimer<=0){c.cloneShotTimer=3.5;const a=Math.atan2(target.y-c.y,target.x-c.x);b.projectiles.push({x:c.x,y:c.y,vx:Math.cos(a)*500,vy:Math.sin(a)*500,life:3,damage:5,target,bullet:true,cloneBullet:true,cloneName:c.name});addLog(`🔫 분신 ${c.name}이 총알을 발사했다!`);}
+      }
+    }
+    if(b.weapon==='geonho'&&b.laserTimer>0&&b.laserTarget){
+      // The original implementation applied fractional damage every frame; suppress it below.
+      b.laserDamageTimer=(b.laserDamageTimer||0)+dt;
+      while(b.laserDamageTimer>=.5&&b.laserTimer>0){b.laserDamageTimer-=.5;if(b.laserTarget.hp>0){damageBall(b.laserTarget,3);addLog(`🔴 건호 레이저 명중! ${b.laserTarget.name}에게 3 피해.`);}}
+    }
+  }
+};
+const v114DamageBase=damageBall;
+damageBall=function(b,amount){
+  if(amount>0&&amount<1)return;
+  if(amount===2&&[player,enemy].some(owner=>owner&&owner.weapon==='chanhyeok'&&(owner.clones||[]).some(c=>Math.hypot(b.x-c.x,b.y-c.y)<(b.size||0)+(c.size||0)+5)))return;
+  v114DamageBase(b,amount);
+};
+const v114TickBase=tick;
+tick=function(t){
+  const before=new Map([player,enemy].filter(Boolean).map(b=>[b,b.hp]));
+  v114TickBase(t);
+  for(const b of [player,enemy])if(b&&b.weapon==='chanhyeok'){
+    if(b.hp<=0)b.clones=[];
+    for(const c of b.clones||[]){c.vx=c.vx||0;c.vy=c.vy||0;c.x=Math.max(c.size+15,Math.min(705-c.size,c.x));c.y=Math.max(c.size+15,Math.min(465-c.size,c.y));}
+  }
+};
+// Draw Geonho's beam from its own active laser state and render clones as shooters.
+const v114DrawEffectsBase=drawCharacterEffects;
+drawCharacterEffects=function(){
+  v114DrawEffectsBase();
+  for(const b of [player,enemy])if(b){
+    if(b.weapon==='geonho'&&b.laserTimer>0&&b.laserTarget){ctx.save();ctx.strokeStyle='#ff304f';ctx.lineWidth=5;ctx.shadowColor='#ff1738';ctx.shadowBlur=15;ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.laserTarget.x,b.laserTarget.y);ctx.stroke();ctx.restore();}
+    if(b.weapon==='chanhyeok')for(const c of b.clones||[]){ctx.save();ctx.globalAlpha=.82;ctx.fillStyle='#ffc45e';ctx.strokeStyle='#fff0c4';ctx.lineWidth=2;ctx.beginPath();ctx.arc(c.x,c.y,c.size,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#222';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText(c.name,c.x,c.y-c.size-8);ctx.restore();}
+  }
+};
+// V115: requested character balance and behavior fixes.
+const v115SpecialBase=specialCharacterTick;
+specialCharacterTick=function(dt){
+  const masked=[];
+  for(const b of [player,enemy])if(b&&b.weapon==='minjae'){masked.push([b,b.weapon]);b.weapon='__minjae_custom__';}
+  v115SpecialBase(dt);
+  for(const [b,w] of masked)b.weapon=w;
+  for(const b of [player,enemy]){
+    if(!b)continue;
+    const target=b===player?enemy:player;
+    if(b.weapon==='minjae'){
+      b.minjaeTimer=(b.minjaeTimer??10)-dt;
+      if(!b.underground&&b.minjaeTimer<=0){b.underground=true;b.burrowTimer=2;b.specialText='땅속 잠복';b.specialTextTimer=.8;addLog('🕳️ 민재가 땅속으로 들어갔다!');}
+      if(b.underground){b.burrowTimer-=dt;const a=Math.atan2(target.y-b.y,target.x-b.x);b.vx=Math.cos(a)*Math.max(3,b.speed*1.2);b.vy=Math.sin(a)*Math.max(3,b.speed*1.2);if(b.burrowTimer<=0){b.underground=false;b.minjaeTimer=10;b.specialText='땅굴 돌파!';b.specialTextTimer=.8;if(Math.hypot(target.x-b.x,target.y-b.y)<b.size+target.size+32){damageBall(target,20);addLog(`🕳️ 민재의 땅굴 공격! ${target.name}에게 20 피해.`);}for(let i=0;i<8;i++){const a=i*Math.PI/4;b.projectiles.push({x:b.x,y:b.y,vx:Math.cos(a)*260,vy:Math.sin(a)*260,life:1.7,damage:10,target,earth:true});}addLog('🪨 민재가 8방향으로 흙더미를 던졌다!');}}
+    }
+    if(b.weapon==='hyunin'){
+      if(!b.awakened&&b.hp<b.maxHp*.5){b.awakened=true;b.name='현인사토루';b.color='#a98cff';b.specialText='현인사토루 각성!';b.specialTextTimer=1.6;b.hyuninTimer=Math.min(b.hyuninTimer||7,1.5);addLog('🟣 현인의 체력이 50% 미만! 현인사토루로 각성했다!');}
+      if(b.stealth){const s=Math.hypot(b.vx,b.vy)||1,newSpeed=Math.max(1,s-1);b.vx=b.vx/s*newSpeed;b.vy=b.vy/s*newSpeed;}
+    }
+    if(b.weapon==='geonho'&&b.laserTimer>0&&b.laserTarget){b.v115LaserTimer=(b.v115LaserTimer||0)+dt;while(b.v115LaserTimer>=1&&b.laserTimer>0){b.v115LaserTimer-=1;if(b.laserTarget.hp>0){v115AllowLaserDamage=true;v115DamageBase(b.laserTarget,3);v115AllowLaserDamage=false;addLog(`🔴 건호 레이저 명중! ${b.laserTarget.name}에게 3 피해.`);}}}
+  }
+};
+const v115DamageBase=damageBall;
+let v115AllowLaserDamage=false;
+damageBall=function(b,amount){if(amount===3&&!v115AllowLaserDamage&&[player,enemy].some(owner=>owner&&owner.weapon==='geonho'&&owner.laserTarget===b&&owner.laserTimer>0))return;v115DamageBase(b,amount)};
+// Chanhyeok clones keep moving, bounce off arena walls, and shoot ricocheting bullets.
+const v115TickBase=tick;
+let v115CloneLastTime=0;
+tick=function(t){
+  const dt=v115CloneLastTime?Math.min((t-v115CloneLastTime)/1000,.04):0;v115CloneLastTime=t;
+  const cloneCounts=new Map(),clones=[];for(const b of [player,enemy])if(b&&b.weapon==='chanhyeok'){cloneCounts.set(b,(b.clones||[]).length);for(const c of b.clones||[])clones.push({owner:b,c,x:c.x,y:c.y,vx:c.vx||0,vy:c.vy||0});}
+  v115TickBase(t);
+  for(const b of [player,enemy])if(b&&b.weapon==='chanhyeok'&&(b.clones||[]).length>(cloneCounts.get(b)||0))b.cloneTimer=20;
+  for(const s of clones){const c=s.c,owner=s.owner;if(!(owner.clones||[]).includes(c))continue;c.x=s.x+s.vx*dt*8;c.y=s.y+s.vy*dt*8;c.vx=s.vx;c.vy=s.vy;const minX=c.size+15,maxX=705-c.size,minY=c.size+15,maxY=465-c.size;if(c.x<minX||c.x>maxX){c.x=Math.max(minX,Math.min(maxX,c.x));c.vx=-c.vx;}if(c.y<minY||c.y>maxY){c.y=Math.max(minY,Math.min(maxY,c.y));c.vy=-c.vy;}}
+  for(const b of [player,enemy])if(b&&b.weapon==='chanhyeok')for(const p of b.projectiles||[]){if(!p.cloneBullet||p.life<=0)continue;if(p.x<22||p.x>698){p.x=Math.max(22,Math.min(698,p.x));p.vx=-p.vx;}if(p.y<22||p.y>458){p.y=Math.max(22,Math.min(458,p.y));p.vy=-p.vy;}p.split=false;p.pieces=null;}
+};
+const v115DrawBallBase=drawBall;
+drawBall=function(b){v115DrawBallBase(b);if(b&&b.weapon==='hyunin'&&b.awakened){ctx.save();ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillStyle='#d7c3ff';ctx.shadowColor='#6e36ff';ctx.shadowBlur=10;ctx.fillText('현인사토루',b.x,b.y-b.size-42);ctx.restore();}};
+const v115CreateBase=create;
+create=function(){v115CreateBase();for(const b of [player,enemy])if(b&&b.weapon==='chanhyeok')b.cloneTimer=20;};
+for(const b of [player,enemy])if(b&&b.weapon==='chanhyeok')b.cloneTimer=20;
+// V116: give clones autonomous arena movement and add persistent, one-hit-per-target awakening orbs.
+function v116LaunchOrb(b,target){
+  b.purpleOrbs=b.purpleOrbs||[];
+  const a=Math.atan2(target.y-b.y,target.x-b.x),angle=a+(Math.random()-.5)*.16;
+  b.purpleOrbs.push({x:b.x+Math.cos(angle)*(b.size+10),y:b.y+Math.sin(angle)*(b.size+10),vx:Math.cos(angle)*115,vy:Math.sin(angle)*115,radius:32,life:8,hitTargets:new Set()});
+  b.hyuninTimer=10;
+  addLog(`🟣 ${b.name}이 거대 보라색 구체를 발사했다!`);
+}
+const v116SpecialBase=specialCharacterTick;
+let v116SpecialStamp=0;
+specialCharacterTick=function(dt){
+  const now=performance.now();
+  v116SpecialBase(dt);
+  if(now-v116SpecialStamp<5)return;
+  v116SpecialStamp=now;
+  for(const b of [player,enemy]){
+    if(!b||b.weapon!=='hyunin'||!b.awakened)continue;
+    b.hyuninTimer=(b.hyuninTimer??10)-dt;
+    if(b.hyuninTimer<=0)v116LaunchOrb(b,b===player?enemy:player);
+  }
+};
+const v116TickBase=tick;
+let v116CloneStamp=0;
+tick=function(t){
+  const now=performance.now(),dt=v116CloneStamp?Math.min((now-v116CloneStamp)/1000,.04):0;v116CloneStamp=now;
+  v116TickBase(t);
+  for(const b of [player,enemy])if(b){
+    if(b.weapon==='chanhyeok')for(const c of b.clones||[]){
+      if(!c.vx&&!c.vy){const a=Math.random()*Math.PI*2;c.vx=Math.cos(a)*Math.max(2,b.speed*.65);c.vy=Math.sin(a)*Math.max(2,b.speed*.65);}
+      c.x+=c.vx*dt*8;c.y+=c.vy*dt*8;
+      const minX=(c.size||b.size)+15,maxX=705-(c.size||b.size),minY=(c.size||b.size)+15,maxY=465-(c.size||b.size);
+      if(c.x<minX||c.x>maxX){c.x=Math.max(minX,Math.min(maxX,c.x));c.vx=-c.vx;}
+      if(c.y<minY||c.y>maxY){c.y=Math.max(minY,Math.min(maxY,c.y));c.vy=-c.vy;}
+    }
+    for(const orb of b.purpleOrbs||[]){
+      if(orb.life<=0)continue;
+      orb.x+=orb.vx*dt;orb.y+=orb.vy*dt;orb.life-=dt;
+      if(orb.x<orb.radius+12||orb.x>708-orb.radius){orb.x=Math.max(orb.radius+12,Math.min(708-orb.radius,orb.x));orb.vx=-orb.vx;}
+      if(orb.y<orb.radius+12||orb.y>468-orb.radius){orb.y=Math.max(orb.radius+12,Math.min(468-orb.radius,orb.y));orb.vy=-orb.vy;}
+      for(const target of [player,enemy])if(target&&target!==b&&target.hp>0&&!orb.hitTargets.has(target)&&Math.hypot(target.x-orb.x,target.y-orb.y)<target.size+orb.radius){orb.hitTargets.add(target);damageBall(target,18);addLog(`🟣 보라색 구체 명중! ${target.name}에게 18 피해.`);}
+    }
+    b.purpleOrbs=(b.purpleOrbs||[]).filter(orb=>orb.life>0);
+  }
+};
+const v116DrawEffectsBase=drawCharacterEffects;
+drawCharacterEffects=function(){
+  v116DrawEffectsBase();
+  for(const b of [player,enemy])if(b){
+    for(const orb of b.purpleOrbs||[]){ctx.save();ctx.globalAlpha=Math.min(1,orb.life);const grad=ctx.createRadialGradient(orb.x-orb.radius*.25,orb.y-orb.radius*.25,2,orb.x,orb.y,orb.radius);grad.addColorStop(0,'#f4e8ff');grad.addColorStop(.35,'#bd72ff');grad.addColorStop(1,'#7020d8');ctx.fillStyle=grad;ctx.shadowColor='#9b43ff';ctx.shadowBlur=24;ctx.beginPath();ctx.arc(orb.x,orb.y,orb.radius,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ead2ff';ctx.lineWidth=3;ctx.stroke();ctx.restore();}
+  }
+};
+const v116DrawBallBase=drawBall;
+drawBall=function(b){v116DrawBallBase(b);if(b&&b.weapon==='hyunin'&&b.awakened){ctx.save();ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.fillStyle='#d7c3ff';ctx.shadowColor='#6e36ff';ctx.shadowBlur=10;ctx.fillText('현인사토루',b.x,b.y-b.size-42);ctx.restore();}};
+const v116CreateBase=create;
+create=function(){v116CreateBase();for(const b of [player,enemy])if(b){if(b.weapon==='chanhyeok')b.cloneTimer=20;if(b.weapon==='hyunin'){b.awakened=false;b.purpleOrbs=[];b.hyuninTimer=10;}}};
+for(const b of [player,enemy])if(b){if(b.weapon==='chanhyeok')b.cloneTimer=20;if(b.weapon==='hyunin'){b.awakened=false;b.purpleOrbs=[];b.hyuninTimer=10;}}
+// V85: 찬혁의 분신은 독립적으로 직선 이동하며, 벽과 다른 공에 튕기고 접촉해도 사라지지 않는다.
+const v85TickBase=tick;
+tick=function(t){
+  const before=[player,enemy].filter(Boolean).map(owner=>({owner,clones:(owner.clones||[]).slice()}));
+  v85TickBase(t);
+  for(const state of before){
+    const owner=state.owner;
+    owner.clones=owner.clones||[];
+    for(const clone of state.clones)if(!owner.clones.includes(clone))owner.clones.push(clone);
+    for(const clone of owner.clones){
+      if(clone.life!==undefined&&clone.life<0)clone.life=1;
+      if(!Number.isFinite(clone.vx)||!Number.isFinite(clone.vy)||(!clone.vx&&!clone.vy)){const a=Math.random()*Math.PI*2,s=Math.max(2,owner.speed*.65);clone.vx=Math.cos(a)*s;clone.vy=Math.sin(a)*s;}
+      const other=owner===player?enemy:player;
+      if(!other)continue;
+      const dx=clone.x-other.x,dy=clone.y-other.y,d=Math.hypot(dx,dy)||.001,min=(clone.size||owner.size)+other.size;
+      if(d<min){const nx=dx/d,ny=dy/d,overlap=min-d;clone.x+=nx*(overlap+1);clone.y+=ny*(overlap+1);const dot=clone.vx*nx+clone.vy*ny;if(dot<0){clone.vx-=2*dot*nx;clone.vy-=2*dot*ny;}if(!clone.vx&&!clone.vy){clone.vx=nx*Math.max(2,owner.speed*.65);clone.vy=ny*Math.max(2,owner.speed*.65);}}
+    }
+  }
+  for(const owner of [player,enemy])if(owner){const other=owner===player?enemy:player;for(const orb of owner.purpleOrbs||[])if(other&&orb.hitTargets&&orb.hitTargets.has(other))orb.life=0;owner.purpleOrbs=(owner.purpleOrbs||[]).filter(orb=>orb.life>0);}
+};
+const v85DrawEffectsBase=drawCharacterEffects;
+drawCharacterEffects=function(){
+  v85DrawEffectsBase();
+  for(const owner of [player,enemy])if(owner&&owner.weapon==='chanhyeok')for(const clone of owner.clones||[]){
+    ctx.save();ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+    const label=clone.name||'찬혁 분신',y=clone.y-(clone.size||owner.size)-12,width=ctx.measureText(label).width+12;
+    ctx.fillStyle='#07101ddd';ctx.beginPath();ctx.roundRect(clone.x-width/2,y-9,width,18,6);ctx.fill();ctx.fillStyle='#ffffff';ctx.fillText(label,clone.x,y);ctx.restore();
+  }
+};
+// 찬혁: 분신을 독립 웨폰볼로 등록하고, 일반 공과 같은 이동·벽 반사·충돌·공격 루프에서 처리한다.
+weapons.chanhyeok={name:'찬혁',range:55,rate:1.1,bonus:1,icon:'🪞'};
+for(const id of ['weapon','enemyWeapon']){
+  const select=$(id);
+  if(select&&!select.querySelector('option[value="chanhyeok"]'))select.insertAdjacentHTML('beforeend','<option value="chanhyeok">🪞 찬혁 — 분신 소환</option>');
+}
+const chCloneOriginalCreate=create;
+create=function(){
+  chCloneOriginalCreate();
+  for(const b of [player,enemy])if(b){
+    b.clones=[];
+    if(b.weapon==='chanhyeok'){b.name='찬혁';b.cloneCooldown=15;b.cloneNextCooldown=15;b.cloneCount=0;}
+  }
+  updateHud();draw();
+};
+function chanhyeokSummon(owner){
+  const angle=Math.random()*Math.PI*2;
+  const clone=makeBall({name:'찬혁 분신 '+(owner.cloneCount+1),color:'#b9a4ff',size:owner.size,power:owner.power,speed:owner.speed,maxHp:owner.maxHp,weapon:'chanhyeok'},owner.x+Math.cos(angle)*(owner.size+owner.size+4),owner.y+Math.sin(angle)*(owner.size+owner.size+4),owner.side);
+  clone.x=Math.max(clone.size+15,Math.min(705-clone.size,clone.x));
+  clone.y=Math.max(clone.size+15,Math.min(465-clone.size,clone.y));
+  clone.vx=Math.cos(angle)*Math.max(2,owner.speed);clone.vy=Math.sin(angle)*Math.max(2,owner.speed);
+  clone.life=10;clone.cool=.4;clone.side=owner.side;clone.owner=owner;clone.isChanhyeokClone=true;
+  owner.clones.push(clone);owner.cloneCount++;
+  addLog('🪞 찬혁이 독립 분신을 소환했다!');
+}
+const chCloneOriginalSpecial=specialCharacterTick;
+specialCharacterTick=function(dt){
+  chCloneOriginalSpecial(dt);
+  for(const owner of [player,enemy])if(owner&&owner.weapon==='chanhyeok'){
+    owner.cloneCooldown-=dt;
+    if(owner.cloneCooldown<=0){chanhyeokSummon(owner);owner.cloneCooldown+=owner.cloneNextCooldown;owner.cloneNextCooldown+=15;}
+  }
+};
+function chanhyeokCloneTick(clone,dt){
+  clone.life-=dt;clone.x+=clone.vx*dt*14+clone.knock;clone.y+=clone.vy*dt*10;clone.knock*=.84;
+  const minX=clone.size+15,maxX=705-clone.size,minY=clone.size+15,maxY=465-clone.size;
+  if(clone.x<minX||clone.x>maxX){clone.x=Math.max(minX,Math.min(maxX,clone.x));clone.vx=-clone.vx;}
+  if(clone.y<minY||clone.y>maxY){clone.y=Math.max(minY,Math.min(maxY,clone.y));clone.vy=-clone.vy;}
+  for(const target of [player,enemy]){
+    if(!target||target===clone||target===clone.owner||target.hp<=0)continue;
+    const dx=target.x-clone.x,dy=target.y-clone.y,d=Math.hypot(dx,dy)||1;
+    if(d<clone.size+target.size){const nx=dx/d,ny=dy/d;clone.x-=nx*2;clone.y-=ny*2;target.x+=nx*2;target.y+=ny*2;clone.vx=-nx*Math.max(2,clone.speed);clone.vy=-ny*Math.max(2,clone.speed);target.vx=nx*Math.max(2,target.speed);target.vy=ny*Math.max(2,target.speed);}
+    clone.cool-=dt;
+    if(d<clone.size+target.size+55&&clone.cool<=0){damageBall(target,Math.max(1,Math.round(clone.power*.65)));target.knock=nx*4;clone.cool=1.1;addLog(`🪞 ${clone.name}의 공격! ${target.name}에게 ${Math.max(1,Math.round(clone.power*.65))} 피해.`);}
+  }
+}
+const chCloneOriginalTick=tick;
+tick=function(t){
+  chCloneOriginalTick(t);
+  if(!running||paused)return;
+  const dt=Math.min((t-(tick.cloneLast||t))/1000,.04);tick.cloneLast=t;
+  for(const owner of [player,enemy])if(owner&&owner.clones){
+    for(const clone of owner.clones)chanhyeokCloneTick(clone,dt);
+    owner.clones=owner.clones.filter(clone=>clone.life>0&&clone.hp>0);
+  }
+  draw();
+};
+const chCloneOriginalDraw=draw;
+draw=function(){
+  chCloneOriginalDraw();
+  for(const owner of [player,enemy])for(const clone of (owner&&owner.clones)||[]){
+    ctx.save();ctx.shadowColor='#b9a4ff';ctx.shadowBlur=13;ctx.fillStyle='#b9a4ff';ctx.beginPath();ctx.arc(clone.x,clone.y,clone.size,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#f0eaff';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#171326';ctx.font='bold 10px system-ui';ctx.textAlign='center';ctx.fillText('분신',clone.x,clone.y+3);ctx.restore();
+  }
+};
+
+// V117: 찬혁 분신은 제자리에서 동일한 총알을 발사하고, 현인은 체력 50% 미만에서만 각성한다.
+const v117CreateBase=create;
+create=function(){
+  v117CreateBase();
+  for(const b of [player,enemy])if(b){
+    if(b.weapon==='chanhyeok'){b.clones=[];b.cloneCooldown=20;b.cloneCount=0;b.chanhyeokShotTimer=5;}
+    if(b.weapon==='hyunin'){b.awakened=false;b.name='현인';b.color='#8f9cff';b.stealth=false;b.hyuninTimer=7;b.purpleOrbs=[];}
+  }
+  updateHud();draw();
+};
+function v117SummonClone(owner){
+  if([player,enemy].some(b=>b&&(b.clones||[]).some(c=>c.hp>0)))return;
+  const angle=Math.random()*Math.PI*2;
+  const x=Math.max(owner.size+15,Math.min(705-owner.size,owner.x+Math.cos(angle)*(owner.size*2+5)));
+  const y=Math.max(owner.size+15,Math.min(465-owner.size,owner.y+Math.sin(angle)*(owner.size*2+5)));
+  const clone={name:'찬혁 분신 '+(++owner.cloneCount),x,y,anchorX:x,anchorY:y,vx:0,vy:0,knock:0,size:owner.size,life:Infinity,hp:50,maxHp:50,power:owner.power,speed:0,cool:0,cloneShotTimer:5,side:owner.side,cloneOwner:owner,isChanhyeokClone:true,color:'#b9a4ff'};
+  owner.clones=owner.clones||[];owner.clones.push(clone);
+  addLog('🪞 찬혁이 제자리 사격 분신을 소환했다! (20초마다 1명)');
+}
+// Legacy clone melee/movement handlers are intentionally disabled.
+chanhyeokCloneTick=function(){};
+const v117SpecialBase=specialCharacterTick;
+specialCharacterTick=function(dt){
+  const masked=[];
+  for(const b of [player,enemy])if(b&&(b.weapon==='chanhyeok'||b.weapon==='hyunin')){masked.push([b,b.weapon]);b.weapon=b.weapon==='chanhyeok'?'__v117_chanhyeok__':'__v117_hyunin__';}
+  v117SpecialBase(dt);
+  for(const [b,w] of masked)b.weapon=w;
+  for(const b of [player,enemy]){
+    if(!b||b.hp<=0)continue;
+    const target=b===player?enemy:player;if(!target||target.hp<=0)continue;
+    if(b.weapon==='chanhyeok'){
+      b.cloneCooldown=(b.cloneCooldown??20)-dt;
+      if(b.cloneCooldown<=0){v117SummonClone(b);b.cloneCooldown=20;}
+      b.chanhyeokShotTimer=(b.chanhyeokShotTimer??5)-dt;
+      if(b.chanhyeokShotTimer<=0){b.chanhyeokShotTimer=5;const a=Math.atan2(target.y-b.y,target.x-b.x);b.projectiles.push({x:b.x,y:b.y,vx:Math.cos(a)*500,vy:Math.sin(a)*500,life:3,damage:5,target,bullet:true});addLog('🔫 찬혁이 총알을 발사했다!');}
+      for(const c of b.clones||[]){c.anchorX=c.anchorX??c.x;c.anchorY=c.anchorY??c.y;c.cloneShotTimer=(c.cloneShotTimer??5)-dt;if(c.cloneShotTimer<=0){c.cloneShotTimer=5;const a=Math.atan2(target.y-c.y,target.x-c.x);b.projectiles.push({x:c.x,y:c.y,vx:Math.cos(a)*500,vy:Math.sin(a)*500,life:3,damage:5,target,bullet:true,cloneBullet:true,cloneName:c.name});addLog(`🔫 ${c.name}이 찬혁과 같은 총알을 발사했다!`);}}
+    }
+    if(b.weapon==='hyunin'){
+      if(!b.awakened&&b.hp<b.maxHp*.5){b.awakened=true;b.stealth=false;b.stealthTimer=0;b.name='현인사토루';b.color='#a98cff';b.hyuninTimer=10;b.purpleOrbs=b.purpleOrbs||[];b.specialText='현인사토루 각성!';b.specialTextTimer=1.6;addLog('🟣 현인의 체력이 50% 미만! 현인사토루로 각성했다!');}
+      if(b.awakened){b.stealth=false;b.hyuninTimer=(b.hyuninTimer??10)-dt;if(b.hyuninTimer<=0)v116LaunchOrb(b,target);}
+      else{
+        b.hyuninTimer=(b.hyuninTimer??7)-dt;
+        if(!b.stealth&&b.hyuninTimer<=0){b.stealth=true;b.stealthTimer=0;b.specialText='은신';b.specialTextTimer=.8;addLog('🗡️ 현인이 은신 공격을 준비한다!');}
+        if(b.stealth){const a=Math.atan2(target.y-b.y,target.x-b.x);b.vx=Math.cos(a)*Math.max(2,b.speed*1.15);b.vy=Math.sin(a)*Math.max(2,b.speed*1.15);if(Math.hypot(target.x-b.x,target.y-b.y)<b.size+target.size+4){damageBall(target,10);b.stealth=false;b.hyuninTimer=7;b.specialText='기습 베기!';b.specialTextTimer=.8;b.vx=-Math.cos(a)*b.speed;b.vy=-Math.sin(a)*b.speed;target.slashEffect=.25;addLog(`🗡️ 현인의 은신 공격! ${target.name}에게 10 피해.`);}}
+      }
+    }
+  }
+};
+const v117TickBase=tick;
+tick=function(t){
+  v117TickBase(t);
+  for(const owner of [player,enemy])if(owner&&owner.weapon==='chanhyeok')for(const c of owner.clones||[]){
+    c.x=c.anchorX??c.x;c.y=c.anchorY??c.y;c.vx=0;c.vy=0;c.knock=0;c.life=Infinity;c.hp=Math.min(c.hp??50,50);
+  }
+};
+
+// V118: 현인사토루 공격 주기, 도윤 발톱참 전환, 찬혁 분신 생명/단일 개체 제한.
+(function(){
+  const oldCreate=create;
+  create=function(){
+    oldCreate();
+    for(const b of [player,enemy])if(b){
+      if(b.weapon==='doyun'){b.clawTimer=undefined;}
+      if(b.weapon==='chanhyeok'){b.clones=[];b.cloneCooldown=20;b.cloneCount=0;}
+    }
+    updateHud();draw();
+  };
+
+  // 각성한 현인사토루의 보라색 구체 공격 간격: 7초.
+  // V118의 발톱참 전환과 돌진 취소를 해제하고 기존 돌진 루틴을 복원한다.
+  const oldSpecial=specialCharacterTick;
+  const oldTick=tick;
+  specialCharacterTick=oldSpecial;
+  tick=oldTick;
+
+  const oldDraw=draw;
+  draw=function(){
+    oldDraw();
+    for(const b of [player,enemy])if(b&&b.weapon==='doyun'&&b.clawEffects){
+      for(const claw of b.clawEffects){
+        if(claw.life<=0)continue;
+        ctx.save();ctx.translate(b.x,b.y);ctx.rotate(claw.angle);ctx.globalAlpha=Math.min(1,claw.life/.32);
+        ctx.strokeStyle='#f2fbff';ctx.lineWidth=6;ctx.lineCap='round';ctx.shadowColor='#a8eaff';ctx.shadowBlur=12;
+        ctx.beginPath();ctx.moveTo(b.size*.5,-b.size*.45);ctx.quadraticCurveTo(b.size+42,0,b.size+88,b.size*.55);ctx.stroke();ctx.restore();
+        claw.life-=.016;
+      }
+      b.clawEffects=b.clawEffects.filter(x=>x.life>0);
+    }
+  };
+})();
+// V119: 캐릭터 동작 복구 및 개별 오류 수정.
+(function(){
+  // 현인사토루는 별도 선택 캐릭터가 아니라 현인의 각성 형태로만 유지한다.
+  for(const id of ['weapon','enemyWeapon']){const s=$(id);const option=s&&s.querySelector('option[value="hyeoninsatoru"]');if(option)option.remove();}
+  delete weapons.hyeoninsatoru;
+
+  // 크림빵의 유도는 '꼭먹어'에서 분열된 조각에만 적용한다.
+  creamBreadTick=function(dt){
+    for(const b of [player,enemy]){
+      if(!b||b.weapon!=='chanyoung')continue;
+      const target=b===player?enemy:player;b.breadShots=b.breadShots||[];b.creamTimer-=dt;
+      if(b.creamTimer<=0){
+        b.creamTimer=3;const labels=['와','와','와','너무맛있어','꼭먹어'],step=b.creamStep%5,label=labels[step],damage=step<3?4:step===3?5:7,splitDamage=step<3?3:4;
+        b.creamStep=(step+1)%5;b.creamName=label;b.creamNameTimer=1;
+        const angle=Math.atan2(target.y-b.y,target.x-b.x);
+        for(let shot=0;shot<2;shot++){const a=angle+(shot===0?-.045:.045);b.breadShots.push({x:b.x+Math.cos(a)*(b.size+4),y:b.y+Math.sin(a)*(b.size+4),vx:Math.cos(a)*330,vy:Math.sin(a)*330,life:3,damage,splitDamage,target,split:false,pieces:[],scale:step===4?1.18:1,homing:step===4});}
+        addLog(`🍞 찬영의 크림빵 공격 「${label}」! 2연발`);
+      }
+      for(const p of b.breadShots){
+        if(p.life<=0)continue;p.life-=dt;
+        if(!p.split){p.x+=p.vx*dt;p.y+=p.vy*dt;if(Math.hypot(p.x-target.x,p.y-target.y)<target.size+12){damageBall(target,p.damage);p.life=0;addLog(`🍞 크림빵 명중! ${target.name}에게 ${p.damage} 피해.`);}else if(p.x<22||p.x>698||p.y<22||p.y>458){p.split=true;p.life=1.2;p.pieces=[{x:p.x,y:p.y,vx:-240,vy:-180,hit:false},{x:p.x,y:p.y,vx:240,vy:180,hit:false}];}}
+        else for(const q of p.pieces){if(p.homing){const dx=target.x-q.x,dy=target.y-q.y,d=Math.hypot(dx,dy)||1;q.vx=dx/d*300;q.vy=dy/d*300;}q.x+=q.vx*dt;q.y+=q.vy*dt;if(!q.hit&&Math.hypot(q.x-target.x,q.y-target.y)<target.size+7){damageBall(target,p.splitDamage);q.hit=true;addLog(`${p.homing?'🥐 유도 크림':'🥐 크림'} 조각 명중! ${target.name}에게 ${p.splitDamage} 피해.`);}}
+      }
+      b.breadShots=b.breadShots.filter(p=>p.life>0);
+    }
+  };
+
+  const oldCreate=create;
+  create=function(){oldCreate();for(const b of [player,enemy])if(b){b.meiSpawnTimer=5;b.mei=b.mei||[];if(b.weapon==='jaewon')b.jaewonCooldown=0;} };
+
+  const oldSpecial=specialCharacterTick;
+  specialCharacterTick=function(dt){
+    const minjaeVelocity=new Map([player,enemy].filter(Boolean).map(b=>[b,{x:b.vx,y:b.vy,was:b.underground}]));
+    const awakening=new Map([player,enemy].filter(Boolean).map(b=>[b,!!b.awakened]));
+    const masked=[];
+    for(const b of [player,enemy])if(b&&(b.weapon==='gyeongryul'||b.weapon==='taeeun')){masked.push([b,b.weapon]);b.weapon='__v119_masked__';}
+    oldSpecial(dt);
+    for(const [b,w] of masked)b.weapon=w;
+    for(const b of [player,enemy]){
+      if(!b)continue;const target=b===player?enemy:player;
+      if(b.weapon==='minjae'&&b.underground){const v=minjaeVelocity.get(b);if(v){b.vx=v.x;b.vy=v.y;}}
+      if(b.weapon==='hyunin'&&!awakening.get(b)&&b.awakened){b.hyuninTimer=7;v116LaunchOrb(b,target);addLog('🟣 현인사토루 각성 즉시 보라 구체 발사!');}
+      if(b.weapon==='gyeongryul'){
+        b.mei=b.mei||[];b.meiSpawnTimer=(b.meiSpawnTimer??5)-dt;
+        if(b.meiSpawnTimer<=0){b.meiSpawnTimer+=4;const a=Math.atan2(target.y-b.y,target.x-b.x);b.mei.push({x:b.x+Math.cos(a)*(b.size+12),y:b.y+Math.sin(a)*(b.size+12),size:Math.max(3,b.size-5),hp:10,life:30,arm:1,owner:b,target});addLog(`🧨 ${b.name}이 메이를 소환했다! 현재 ${b.mei.length}마리.`);}
+        for(const m of b.mei){m.arm=Math.max(0,(m.arm||0)-dt);m.life-=dt;if(m.arm>0)continue;
+          if(Math.hypot(b.x-m.x,b.y-m.y)<b.size+m.size){healBall(b,15);m.life=0;addLog(`💚 ${b.name}이 메이와 접촉해 체력 15 회복!`);continue;}
+          if(Math.hypot(target.x-m.x,target.y-m.y)<target.size+m.size){damageBall(target,13);m.life=0;addLog(`💥 메이가 적에게 닿아 13 피해!`);}
+        }
+        b.mei=b.mei.filter(m=>m.life>0&&m.hp>0);
+      }
+      if(b.weapon==='taeeun'){
+        b.taeeunTimer=(b.taeeunTimer??7)-dt;
+        if(b.taeeunTimer<=0){b.taeeunTimer=7;if(Math.random()<.2){b.waterDamageBonus=0;b.specialText='불발';b.specialTextTimer=1;addLog(`🌊 ${b.name}의 물기둥 불발! 누적 강화 초기화.`);}else{b.waterEffects.push({life:2,age:0,owner:b,target,angle:Math.atan2(target.y-b.y,target.x-b.x),next:0});addLog(`🌊 ${b.name}이 물기둥을 발사했다!`);}}
+        for(const e of b.waterEffects){e.life-=dt;e.age+=dt;e.next=(e.next||0)-dt;e.angle=Math.atan2(target.y-b.y,target.x-b.x);const dx=target.x-b.x,dy=target.y-b.y,dist=Math.hypot(dx,dy),a=Math.atan2(dy,dx),diff=Math.atan2(Math.sin(a-e.angle),Math.cos(a-e.angle));if(dist<=250&&Math.abs(diff)<.19&&e.next<=0){e.hitCount=(e.hitCount||0)+1;b.waterDamageBonus=(b.waterDamageBonus||0)+1;const dmg=5+b.waterDamageBonus;damageBall(target,dmg);e.next=.5;addLog(`💧 물기둥 명중! ${target.name}에게 ${dmg} 피해.`);}}
+        b.waterEffects=b.waterEffects.filter(e=>e.life>0);
+      }
+      if(b.weapon==='geonho'){
+        b.lastWordTimer=Math.max(0,(b.lastWordTimer||0)-dt);
+        const sets=[['민들레','레미콘','콘푸로스트','트자','자리낏'],['사과','과일','일본어','어해','해질녘'],['국어','어명','명확','확진','진흙'],['우유','유세','세무','무진','진화유진기본코스튬']];
+        const prev=b.v119WordIndex??b.wordIndex??0,prevSet=b.v119WordSet??b.wordSet??0,now=b.wordIndex??0,set=sets[prevSet]||sets[0];
+        if(now!==prev){if(now===0&&prev>0){b.lastWord=set[Math.min(prev-1,set.length-1)];b.lastWordTimer=2;}b.v119WordIndex=now;b.v119WordSet=b.wordSet??prevSet;}
+      }
+    }
+  };
+
+  const oldSummon=v117SummonClone;
+  v117SummonClone=function(owner){oldSummon(owner);const c=(owner.clones||[]).at(-1);if(c){const a=Math.random()*Math.PI*2,s=Math.max(2,owner.speed*.8);c.vx=Math.cos(a)*s;c.vy=Math.sin(a)*s;c.speed=s;c.attackTimer=1;c.anchorX=c.x;c.anchorY=c.y;}};
+
+  const oldTick=tick;
+  tick=function(t){oldTick(t);};
+
+  const oldDraw=draw;
+  draw=function(){oldDraw();for(const b of [player,enemy])if(b&&b.weapon==='geonho'&&b.lastWordTimer>0&&b.lastWord){ctx.save();ctx.globalAlpha=Math.min(1,b.lastWordTimer);ctx.font='bold 16px system-ui';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='#111';ctx.fillStyle='#ffe58a';ctx.strokeText(b.lastWord,b.x,b.y+b.size+48);ctx.fillText(b.lastWord,b.x,b.y+b.size+48);ctx.restore();}};
+})();
+// V120: 찬혁은 제자리 사격, 분신은 전장에 하나만 존재하며 체력 50.
+(function(){
+  const originalSummon=v117SummonClone;
+  v117SummonClone=function(owner){
+    if([player,enemy].some(b=>b&&(b.clones||[]).some(c=>c.hp>0)))return;
+    originalSummon(owner);
+    const c=(owner.clones||[]).find(x=>x.isChanhyeokClone)||owner.clones?.[owner.clones.length-1];
+    if(c){c.hp=50;c.maxHp=50;c.life=Infinity;c.vx=0;c.vy=0;c.knock=0;c.speed=0;c.fixedX=c.x;c.fixedY=c.y;c.anchorX=c.x;c.anchorY=c.y;c.cloneShotTimer=5;c.deathPenaltyApplied=false;}
+  };
+
+  // 기존 분신 이동·충돌 공격 루틴은 사용하지 않는다.
+  chanhyeokCloneTick=function(){};
+  const baseSpecial=specialCharacterTick;
+  specialCharacterTick=function(dt){
+    baseSpecial(dt);
+    for(const owner of [player,enemy])if(owner&&owner.weapon==='chanhyeok'){
+      owner.clones=owner.clones||[];
+      owner.cloneCooldown=Math.max(0,owner.cloneCooldown??20);
+      if(owner.cloneCooldown<=0){v117SummonClone(owner);owner.cloneCooldown=20;}
+      owner.chanhyeokShotTimer=(owner.chanhyeokShotTimer??5)-dt;
+      const target=owner===player?enemy:player;
+      if(target&&owner.chanhyeokShotTimer<=0){owner.chanhyeokShotTimer=5;fire(owner,target,false);}
+      for(const c of owner.clones){
+        c.hp=Math.min(50,c.hp??50);c.fixedX=c.fixedX??c.x;c.fixedY=c.fixedY??c.y;c.x=c.fixedX;c.y=c.fixedY;c.vx=0;c.vy=0;c.knock=0;
+        c.cloneShotTimer=(c.cloneShotTimer??5)-dt;
+        if(target&&c.cloneShotTimer<=0){c.cloneShotTimer=5;fire(c,target,true,owner);}
+      }
+    }
+  };
+  function fire(shooter,target,isClone,owner){
+    const a=Math.atan2(target.y-shooter.y,target.x-shooter.x);
+    const list=isClone?owner.projectiles:shooter.projectiles;
+    list.push({x:shooter.x+Math.cos(a)*(shooter.size+5),y:shooter.y+Math.sin(a)*(shooter.size+5),vx:Math.cos(a)*520,vy:Math.sin(a)*520,life:2.5,damage:5,target,bullet:true,bulletType:'metal',cloneBullet:isClone});
+    addLog(isClone?'🔫 찬혁의 분신이 총알을 발사했다!':'🔫 찬혁이 총알을 발사했다!');
+  }
+
+  // V123: 분신도 찬혁 본체와 동일한 사격 루틴·탄속·피해·발사 간격을 사용한다.
+  // 투사체는 소유자(찬혁)의 투사체 목록에 등록해 기존 충돌/수명/렌더링 처리를 공유한다.
+  function fireChanhyeokShot(shooter,target,owner,isClone){
+    if(!shooter||!target||target.hp<=0)return;
+    const angle=Math.atan2(target.y-shooter.y,target.x-shooter.x);
+    const projectiles=owner.projectiles||(owner.projectiles=[]);
+    projectiles.push({
+      x:shooter.x+Math.cos(angle)*(shooter.size+5),
+      y:shooter.y+Math.sin(angle)*(shooter.size+5),
+      vx:Math.cos(angle)*520,vy:Math.sin(angle)*520,
+      life:2.5,damage:5,target,bullet:true,bulletType:'metal',
+      cloneBullet:!!isClone,owner,shooter
+    });
+    addLog(isClone?'🔫 찬혁의 분신이 본체와 같은 총알을 발사했다!':'🔫 찬혁이 총알을 발사했다!');
+  }
+  // 본체와 분신 모두 같은 5초 주기로 동일 함수로 발사한다.
+  const v123SpecialBase=specialCharacterTick;
+  specialCharacterTick=function(dt){
+    v123SpecialBase(dt);
+    for(const owner of [player,enemy])if(owner&&owner.weapon==='chanhyeok'){
+      const target=owner===player?enemy:player;
+      if(!target||target.hp<=0)continue;
+      owner.chanhyeokShotTimer=(owner.chanhyeokShotTimer??5)-dt;
+      if(owner.chanhyeokShotTimer<=0){owner.chanhyeokShotTimer+=5;fireChanhyeokShot(owner,target,owner,false);}
+      for(const clone of owner.clones||[]){
+        if(clone.hp<=0)continue;
+        clone.fixedX=clone.fixedX??clone.x;clone.fixedY=clone.fixedY??clone.y;
+        clone.x=clone.fixedX;clone.y=clone.fixedY;clone.vx=0;clone.vy=0;
+      clone.cloneShotTimer=(clone.cloneShotTimer??6)-dt;
+      if(clone.cloneShotTimer<=0){clone.cloneShotTimer+=6;fireChanhyeokShot(clone,target,owner,true);}
+      }
+    }
+  };
+
+  // 사망 직전 분신을 추적해 제거 프레임에 소유자에게 정확히 15 피해.
+  const baseTick=tick;
+  tick=function(t){
+    const before=[];
+    for(const owner of [player,enemy])for(const c of owner?.clones||[])before.push({owner,c});
+    baseTick(t);
+    for(const {owner,c} of before){
+      const still=(owner.clones||[]).includes(c);
+      if((c.hp<=0||!still)&&!c.deathPenaltyApplied){
+        c.deathPenaltyApplied=true;owner.clones=(owner.clones||[]).filter(x=>x!==c);
+        damageBall(owner,15);addLog('💥 찬혁의 분신이 파괴됐다! 찬혁에게 15 피해.');
+      }else if(still){c.x=c.fixedX??c.x;c.y=c.fixedY??c.y;c.anchorX=c.x;c.anchorY=c.y;c.vx=0;c.vy=0;c.knock=0;c.hp=Math.min(50,c.hp??50);}
+    }
+    // 전투 중 전체 분신 수를 한 개로 제한한다.
+    const all=[];for(const owner of [player,enemy])for(const c of owner?.clones||[])all.push({owner,c});
+    for(const item of all.slice(1))item.owner.clones=item.owner.clones.filter(c=>c!==item.c);
+  };
+
+  // 찬혁과 분신의 탄환은 금속 탄두와 짧은 꼬리로 표현한다.
+  const baseDrawProjectiles=drawProjectiles;
+  drawProjectiles=function(){
+    baseDrawProjectiles();
+    for(const owner of [player,enemy])for(const p of owner?.projectiles||[])if(p.bulletType==='metal'&&p.life>0){
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.atan2(p.vy,p.vx));
+      ctx.strokeStyle='#d8e1ec';ctx.lineWidth=3;ctx.lineCap='round';ctx.shadowColor='#a9c8e8';ctx.shadowBlur=7;
+      ctx.beginPath();ctx.moveTo(-13,0);ctx.lineTo(-5,0);ctx.stroke();
+      ctx.fillStyle='#dce6f0';ctx.strokeStyle='#71869c';ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.moveTo(-5,-3.2);ctx.lineTo(3, -2.5);ctx.quadraticCurveTo(8,0,3,2.5);ctx.lineTo(-5,3.2);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+    }
+  };
+})();
+// V121: 찬혁 분신 구형 이동 루틴 제거, 도윤은 발톱참만 피해를 준다.
+(function(){
+  // 찬혁 분신은 제자리에서만 존재한다. 투사체 피격 및 사망 처리는 V120에서 관리한다.
+  const previousTick=tick;
+  tick=function(t){
+    for(const owner of [player,enemy])for(const c of owner?.clones||[]){c.x=c.fixedX??c.x;c.y=c.fixedY??c.y;c.anchorX=c.x;c.anchorY=c.y;c.vx=0;c.vy=0;c.knock=0;c.speed=0;c.hp=Math.min(50,c.hp??50);}
+    previousTick(t);
+    for(const owner of [player,enemy])for(const c of owner?.clones||[]){c.x=c.fixedX??c.x;c.y=c.fixedY??c.y;c.anchorX=c.x;c.anchorY=c.y;c.vx=0;c.vy=0;c.knock=0;c.speed=0;}
+  };
+
+  // 금속 탄환은 기본 레몬 렌더링 대신 탄두 형태로 한 번만 그린다.
+  drawProjectiles=function(){
+    for(const b of [player,enemy]){if(!b)continue;for(const p of b.projectiles){
+      if(p.chip){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(elapsed*8);ctx.fillStyle=p.purpleChip?'#bd65ff':'#ffc34d';ctx.strokeStyle=p.purpleChip?'#f0d0ff':'#fff0a8';ctx.shadowColor=p.purpleChip?'#a42dff':'transparent';ctx.shadowBlur=p.purpleChip?14:0;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-7,-5);ctx.lineTo(7,-5);ctx.lineTo(9,0);ctx.lineTo(7,5);ctx.lineTo(-7,5);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}
+      else if(p.bulletType==='metal'){ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.strokeStyle='#d8e1ec';ctx.lineWidth=3;ctx.lineCap='round';ctx.shadowColor='#a9c8e8';ctx.shadowBlur=7;ctx.beginPath();ctx.moveTo(-13,0);ctx.lineTo(-5,0);ctx.stroke();ctx.fillStyle='#dce6f0';ctx.strokeStyle='#71869c';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-5,-3.2);ctx.lineTo(3,-2.5);ctx.quadraticCurveTo(8,0,3,2.5);ctx.lineTo(-5,3.2);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}
+    }}
+  };
+
+  // 돌진은 이동만 수행하며, 접촉 피해와 일반 근접 공격은 발생하지 않는다.
+  const previousAttack=attack;
+  attack=function(a,b,dt){if(a?.weapon==='doyun')return;return previousAttack(a,b,dt);};
+  const previousSpecial=specialCharacterTick;
+  specialCharacterTick=function(dt){
+    previousSpecial(dt);
+    for(const b of [player,enemy])if(b&&b.weapon==='doyun'){
+      const target=b===player?enemy:player;b.clawTimer=(b.clawTimer??4)-dt;b.clawEffects=b.clawEffects||[];
+      if(b.clawTimer<=0){b.clawTimer=4;const angle=Math.atan2(target.y-b.y,target.x-b.x);b.clawEffects=[-1,0,1].map(k=>({angle:angle+k*Math.PI/9,life:.32}));const dist=Math.hypot(target.x-b.x,target.y-b.y);if(dist<=b.size+target.size+150){damageBall(target,7);target.slashEffect=.32;addLog(`🐾 ${b.name}의 발톱참! ${target.name}에게 10 피해.`);}else addLog(`🐾 ${b.name}이 발톱참을 휘둘렀다!`);}
+    }
+  };
+})();
+// V122: 도윤 돌진은 이동 전용. 적과 접촉한 프레임에 발톱참을 즉시 1회 발동한다.
+(function(){
+  function v122Claw(b,target){
+    if(!b||!target||b.hp<=0||target.hp<=0)return;
+    const angle=Math.atan2(target.y-b.y,target.x-b.x);
+    b.clawEffects=[-1,0,1].map(k=>({angle:angle+k*Math.PI/9,life:.32}));
+    damageBall(target,7);target.slashEffect=.32;
+    b.clawTimer=4;b.v122LastClawAt=performance.now();
+    addLog(`🐾 ${b.name}이 돌진 접촉 발톱참을 사용했다! ${target.name}에게 10 피해.`);
+  }
+  // 도윤의 일반 충돌/돌진 피해를 차단한다. 발톱참 피해는 위 함수에서만 준다.
+  const v122DamageBase=damageBall;
+  damageBall=function(target,amount){
+    if(target&&target._v122DoyunDashContact)return;
+    return v122DamageBase(target,amount);
+  };
+  const v122TickBase=tick;
+  tick=function(t){
+    const states=[player,enemy].filter(Boolean).map(b=>({b,x:b.x,y:b.y,active:b.weapon==='doyun'&&((b.dashing||0)>0||(b.doyunDashActive||0)>0||(b.dashTimer||0)>0),hit:!!b.v122DashHit}));
+    v122TickBase(t);
+    for(const s of states){
+      const b=s.b,target=b===player?enemy:player;
+      if(!target||b.weapon!=='doyun')continue;
+      const nowActive=((b.dashing||0)>0||(b.doyunDashActive||0)>0||(b.dashTimer||0)>0);
+      const touched=Math.hypot(b.x-target.x,b.y-target.y)<=b.size+target.size+2;
+      if(s.active&&!s.hit&&touched){b.v122DashHit=true;v122Claw(b,target);}
+      if(!nowActive&&!s.active)b.v122DashHit=false;
+      if(!nowActive&&s.active&&!touched)b.v122DashHit=false;
+    }
+  };
+  // 돌진의 접촉 피해를 발생시키는 일반 공격은 비활성화하고, 발톱참만 공격으로 허용.
+  const v122AttackBase=attack;
+  attack=function(a,b,dt){if(a&&a.weapon==='doyun')return;return v122AttackBase(a,b,dt);};
+})();
+
+// V124: 레몬 공격 완전 비활성화, 민재 땅굴 표시, 도윤 돌진 최대 1초 제한.
+(function(){
+  const v124CreateBase=create;
+  create=function(){
+    v124CreateBase();
+    for(const b of [player,enemy])if(b){
+      // 구형 레몬 투척 타이머를 사실상 영구 정지한다.
+      if(b.weapon==='chanyoung'||b.weapon==='chanhyeok')b.specialTimer=Number.MAX_SAFE_INTEGER;
+      b.v124DashElapsed=0;
+    }
+  };
+
+  // 구형 투사체가 남아 있더라도 찬영·찬혁에게 레몬류 투사체가 생성/유지되지 않도록 차단.
+  const v124TickBase=tick;
+  tick=function(t){
+    v124TickBase(t);
+    for(const b of [player,enemy])if(b){
+      if(b.weapon==='chanyoung'||b.weapon==='chanhyeok'){
+        b.specialTimer=Number.MAX_SAFE_INTEGER;
+        b.projectiles=(b.projectiles||[]).filter(p=>p.bulletType==='metal'||p.bullet||p.chip);
+      }
+    }
+  };
+
+  // 민재가 땅굴에 들어가면 공 위쪽에 구멍 이모지를 표시한다.
+  const v124DrawBallBase=drawBall;
+  drawBall=function(b){
+    v124DrawBallBase(b);
+    if(b&&b.weapon==='minjae'&&b.underground){
+      ctx.save();ctx.font='bold 28px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.shadowColor='#000000';ctx.shadowBlur=7;ctx.fillStyle='#ffffff';ctx.fillText('🕳',b.x,b.y-b.size-17);ctx.restore();
+    }
+  };
+
+  // 도윤의 돌진 상태가 연속 1초를 넘으면 강제로 종료한다.
+  const v124SpecialBase=specialCharacterTick;
+  specialCharacterTick=function(dt){
+    const before=new Map([player,enemy].filter(Boolean).map(b=>[b,b.weapon==='doyun'&&(b.dashing||0)>0]));
+    v124SpecialBase(dt);
+    for(const b of [player,enemy])if(b&&b.weapon==='doyun'){
+      const active=(b.dashing||0)>0;
+      if(active){
+        b.v124DashElapsed=(b.v124DashElapsed||0)+(dt||0);
+        if(b.v124DashElapsed>=1){
+          b.dashing=0;b.doyunDashActive=0;b.dashTimer=0;b.v124DashElapsed=0;
+          const speed=Math.max(1,b.speed||7),mag=Math.hypot(b.vx||0,b.vy||0)||1;
+          b.vx=(b.vx||0)/mag*speed;b.vy=(b.vy||0)/mag*speed;
+        }
+      }else b.v124DashElapsed=0;
+    }
+  };
+})();
+// V125: 찬혁의 보라색 고정 분신과 오렌지색 이동 분신을 분리하고 충돌 판정을 추가한다.
+(function(){
+  const summonBase=v117SummonClone;
+  v117SummonClone=function(owner){
+    // 보라색 고정 분신은 기존 방식대로 한 개만 유지한다.
+    summonBase(owner);
+    const purple=(owner.clones||[]).find(c=>c.isChanhyeokClone);
+    if(purple){purple.hp=30;purple.maxHp=30;purple.color='#b9a4ff';purple.vx=0;purple.vy=0;purple.speed=0;purple.fixedX=purple.x;purple.fixedY=purple.y;purple.cloneKind='purple';}
+  };
+
+  const createBase=create;
+  create=function(){
+    createBase();
+    for(const b of [player,enemy])if(b&&b.weapon==='chanhyeok'){
+      b.orangeClones=[];b.orangeCloneTimer=8;
+      for(const c of b.clones||[])if(c.isChanhyeokClone){c.hp=30;c.maxHp=30;c.cloneKind='purple';c.color='#b9a4ff';}
+    }
+  };
+
+  // 분신은 본체와 별개의 체력을 가지며, 피격 시 본체로 피해를 넘기지 않는다.
+  const damageBase=damageBall;
+  damageBall=function(target,amount){
+    if(target&&target.isChanhyeokClone){target.hp=Math.max(0,target.hp-amount);target.flash=.12;return;}
+    return damageBase(target,amount);
+  };
+
+  const tickBase=tick;
+  tick=function(t){
+    tickBase(t);
+    for(const owner of [player,enemy])if(owner&&owner.weapon==='chanhyeok'){
+      const target=owner===player?enemy:player;
+      owner.orangeClones=owner.orangeClones||[];
+      owner.orangeCloneTimer=(owner.orangeCloneTimer??8)-.016;
+      if(owner.orangeCloneTimer<=0&&owner.orangeClones.length<2&&target&&target.hp>0){
+        owner.orangeCloneTimer=8;
+        const a=Math.random()*Math.PI*2,x=Math.max(35,Math.min(685,owner.x+Math.cos(a)*75)),y=Math.max(35,Math.min(445,owner.y+Math.sin(a)*75));
+        owner.orangeClones.push({name:'찬혁 이동 분신',x,y,vx:0,vy:0,size:Math.max(13,owner.size*.72),hp:30,maxHp:30,color:'#ff9b35',cloneOwner:owner,isChanhyeokClone:true,cloneKind:'orange',hitCooldown:0,side:owner.side,projectiles:[]});
+        addLog('🟠 찬혁의 오렌지색 이동 분신 소환!');
+      }
+      for(const c of owner.orangeClones){
+        if(c.hp<=0)continue;
+        const dx=target.x-c.x,dy=target.y-c.y,d=Math.hypot(dx,dy)||1;
+        c.vx=dx/d*3.2;c.vy=dy/d*3.2;c.x+=c.vx;c.y+=c.vy;
+        if(c.x<c.size+14||c.x>706-c.size)c.vx*=-1;
+        if(c.y<c.size+14||c.y>466-c.size)c.vy*=-1;
+        c.x=Math.max(c.size+14,Math.min(706-c.size,c.x));c.y=Math.max(c.size+14,Math.min(466-c.size,c.y));
+        c.hitCooldown=Math.max(0,(c.hitCooldown||0)-.016);
+        // 적 웨폰볼과 접촉하면 분신도 충돌하고, 짧은 간격으로 접촉 피해를 준다.
+        if(Math.hypot(c.x-target.x,c.y-target.y)<c.size+target.size&&c.hitCooldown<=0){damageBall(target,2);c.hitCooldown=.6;const a=Math.atan2(c.y-target.y,c.x-target.x);c.x+=Math.cos(a)*9;c.y+=Math.sin(a)*9;}
+        // 상대의 비칩 투사체가 분신에 닿으면 분신 체력만 감소한다.
+        for(const p of target.projectiles||[])if(p.life>0&&!p.chip&&!p.cream&&Math.hypot(p.x-c.x,p.y-c.y)<c.size+7){c.hp=Math.max(0,c.hp-(p.damage||5));p.life=0;}
+      }
+      owner.orangeClones=owner.orangeClones.filter(c=>c.hp>0);
+      for(const c of owner.clones||[])if(c.isChanhyeokClone&&c.cloneKind==='purple'){
+        c.hp=Math.min(30,c.hp??30);c.maxHp=30;c.x=c.fixedX??c.x;c.y=c.fixedY??c.y;
+      }
+    }
+  };
+
+  const drawEffectsBase=drawCharacterEffects;
+  drawCharacterEffects=function(){
+    drawEffectsBase();
+    for(const owner of [player,enemy])if(owner){
+      for(const c of owner.orangeClones||[]){ctx.save();ctx.fillStyle='#ff9633';ctx.strokeStyle='#ffe0a8';ctx.lineWidth=2;ctx.shadowColor='#ff8a24';ctx.shadowBlur=12;ctx.beginPath();ctx.arc(c.x,c.y,c.size,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.shadowBlur=0;ctx.fillStyle='#1b1b1b';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText('30',c.x,c.y+4);ctx.restore();}
+      for(const c of owner.clones||[])if(c.isChanhyeokClone&&c.cloneKind==='purple'){ctx.save();ctx.fillStyle='#b9a4ff';ctx.strokeStyle='#eee4ff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(c.x,c.y,c.size,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#171222';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText('30',c.x,c.y+4);ctx.restore();}
+    }
+  };
+
+  // 민재의 흙더미는 기존 8방향 투사체에 흙색 시각 효과를 적용한다.
+  const drawProjectilesBase=drawProjectiles;
+  drawProjectiles=function(){
+    drawProjectilesBase();
+    for(const b of [player,enemy])if(b)for(const p of b.projectiles||[])if(p.earth&&p.life>0){
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#9b7048';ctx.strokeStyle='#e0bd8d';ctx.lineWidth=2;ctx.shadowColor='#6d4728';ctx.shadowBlur=6;ctx.beginPath();ctx.moveTo(-8,-5);ctx.lineTo(-2,-9);ctx.lineTo(8,-3);ctx.lineTo(7,5);ctx.lineTo(-4,8);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+    }
+  };
+})();
+// V126: 찬혁의 '분신'은 보라색 고정형 터렛 하나만 유지한다.
+(function(){
+  const summonBase=v117SummonClone;
+  v117SummonClone=function(owner){
+    if(!owner||owner.weapon!=='chanhyeok')return;
+    owner.clones=(owner.clones||[]).filter(c=>c&&c.isChanhyeokClone&&c.cloneKind==='purple'&&c.hp>0);
+    if(owner.clones.length)return;
+    summonBase(owner);
+    const turret=(owner.clones||[]).find(c=>c.isChanhyeokClone)||owner.clones?.[owner.clones.length-1];
+    if(turret){
+      turret.isChanhyeokClone=true;turret.cloneKind='purple';turret.name='분신';
+      turret.hp=30;turret.maxHp=30;turret.color='#b9a4ff';turret.vx=0;turret.vy=0;turret.speed=0;turret.knock=0;
+      turret.fixedX=turret.x;turret.fixedY=turret.y;turret.anchorX=turret.x;turret.anchorY=turret.y;
+      turret.cloneShotTimer=turret.cloneShotTimer??0;
+      owner.clones=[turret];
+    }
+  };
+
+  const createBase=create;
+  create=function(){
+    createBase();
+    for(const b of [player,enemy])if(b&&b.weapon==='chanhyeok'){
+      b.orangeClones=[];
+      b.clones=(b.clones||[]).filter(c=>c&&c.isChanhyeokClone&&c.cloneKind==='purple');
+      for(const c of b.clones){c.name='분신';c.hp=30;c.maxHp=30;c.color='#b9a4ff';c.cloneKind='purple';}
+    }
+  };
+
+  const tickBase=tick;
+  tick=function(t){
+    tickBase(t);
+    for(const b of [player,enemy])if(b&&b.weapon==='chanhyeok'){
+      // 다른 색상·종류의 분신은 모두 제거하고 보라색 터렛만 남긴다.
+      b.orangeClones=[];
+      b.clones=(b.clones||[]).filter(c=>c&&c.isChanhyeokClone&&c.cloneKind==='purple'&&c.hp>0).slice(0,1);
+      for(const c of b.clones){
+        c.name='분신';c.hp=Math.min(30,c.hp??30);c.maxHp=30;c.color='#b9a4ff';
+        c.x=c.fixedX??c.x;c.y=c.fixedY??c.y;c.vx=0;c.vy=0;c.speed=0;c.knock=0;
+      }
+    }
+  };
+
+  const drawBase=drawCharacterEffects;
+  drawCharacterEffects=function(){
+    drawBase();
+    for(const b of [player,enemy])if(b&&b.weapon==='chanhyeok'){
+      for(const c of b.clones||[])if(c.isChanhyeokClone&&c.cloneKind==='purple'){
+        ctx.save();ctx.fillStyle='#b9a4ff';ctx.strokeStyle='#eee4ff';ctx.lineWidth=2;ctx.shadowColor='#9b72ff';ctx.shadowBlur=13;
+        ctx.beginPath();ctx.arc(c.x,c.y,c.size,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.shadowBlur=0;
+        ctx.fillStyle='#171222';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText('30',c.x,c.y+4);
+        ctx.fillStyle='#e8dcff';ctx.font='bold 12px system-ui';ctx.fillText('분신',c.x,c.y-c.size-9);ctx.restore();
+      }
+    }
+  };
+})();
+// V127: 찬혁의 오렌지색 분신을 제거하고 총알 피해를 5로 고정한다.
+// 민재의 흙더미는 벽에 처음 닿을 때 한 번만 90도 꺾여 튕긴다.
+(function(){
+  const specialBase=specialCharacterTick;
+  specialCharacterTick=function(dt){
+    specialBase(dt);
+    for(const b of [player,enemy])if(b&&b.weapon==='chanhyeok'){
+      b.orangeClones=[];
+      b.clones=(b.clones||[]).filter(c=>c&&c.cloneKind==='purple'&&c.isChanhyeokClone&&c.hp>0).slice(0,1);
+      for(const p of b.projectiles||[])if(p.bullet||p.bulletType==='metal')p.damage=5;
+    }
+  };
+
+  const tickBase=tick;
+  tick=function(t){
+    const earthBefore=[];
+    for(const b of [player,enemy])if(b)for(const p of b.projectiles||[])if(p.earth&&p.life>0&&!p.earthBounced){
+      earthBefore.push({p,vx:p.vx,vy:p.vy});
+    }
+    tickBase(t);
+    for(const item of earthBefore){
+      const p=item.p;
+      if(p.life<=0||p.earthBounced)continue;
+      if(p.split||p.x<22||p.x>698||p.y<22||p.y>458){
+        p.x=Math.max(22,Math.min(698,p.x));p.y=Math.max(22,Math.min(458,p.y));
+        // 정확히 90도 회전. 벽에 한 번 튕긴 뒤에는 추가 반사하지 않는다.
+        p.vx=-item.vy;p.vy=item.vx;
+        p.split=false;p.pieces=null;p.earthBounced=true;
+      }
+    }
+  };
+})();
+
+// V128: 구형 V85 독립 분신(주황색 '찬혁 분신 1/2') 생성 자체를 완전히 비활성화한다.
+(function(){
+  const oldCreate=create;
+  create=function(){
+    oldCreate();
+    for(const b of [player,enemy])if(b&&b.weapon==='chanhyeok'){
+      b.v85CloneTimer=Number.MAX_SAFE_INTEGER;
+      b.orangeCloneTimer=Number.MAX_SAFE_INTEGER;
+      b.orangeClones=[];
+    }
+    if(typeof v85Clones!=='undefined')v85Clones.length=0;
+  };
+  const oldTick=tick;
+  tick=function(t){
+    oldTick(t);
+    for(const b of [player,enemy])if(b&&b.weapon==='chanhyeok'){
+      b.v85CloneTimer=Number.MAX_SAFE_INTEGER;
+      b.orangeCloneTimer=Number.MAX_SAFE_INTEGER;
+      b.orangeClones=[];
+      b.clones=(b.clones||[]).filter(c=>c&&c.isChanhyeokClone&&c.cloneKind==='purple'&&c.hp>0).slice(0,1);
+    }
+    if(typeof v85Clones!=='undefined')v85Clones.length=0;
+  };
+})();
+// V129: 보라색 분신에 투사체 충돌 판정과 3초 침묵 상태를 적용한다.
+(function(){
+  const specialBeforeCloneSilence=specialCharacterTick;
+  specialCharacterTick=function(dt){
+    for(const owner of [player,enemy])if(owner&&owner.weapon==='chanhyeok'){
+      for(const c of owner.clones||[])if(c&&c.isChanhyeokClone&&c.cloneKind==='purple'&&c.hp>0){
+        c.silenceTimer=Math.max(0,(c.silenceTimer||0)-dt);
+        if(c.silenceTimer>0)c.cloneShotTimer=3.5;
+      }
+    }
+    specialBeforeCloneSilence(dt);
+  };
+  const tickBeforeCloneCollision=tick;
+  tick=function(t){
+    tickBeforeCloneCollision(t);
+    for(const owner of [player,enemy])if(owner&&owner.weapon==='chanhyeok'){
+      const attacker=owner===player?enemy:player;
+      for(const c of owner.clones||[]){
+        if(!c||!c.isChanhyeokClone||c.cloneKind!=='purple'||c.hp<=0)continue;
+        c.collidable=true;
+        for(const p of attacker?.projectiles||[]){
+          if(!p||p.life<=0||p.cloneBullet||p.owner===owner)continue;
+          if(Math.hypot((p.x||0)-c.x,(p.y||0)-c.y)<=c.size+(p.radius||7)){
+            c.hp=Math.max(0,c.hp-(p.damage||5));c.flash=.18;c.silenceTimer=3;c.cloneShotTimer=6;p.life=0;
+            addLog('🔇 분신이 공격에 맞아 3초간 침묵했다!');break;
+          }
+        }
+      }
+    }
+  };
+  const drawBeforeCloneSilence=drawCharacterEffects;
+  drawCharacterEffects=function(){
+    drawBeforeCloneSilence();
+    for(const owner of [player,enemy])if(owner)for(const c of owner.clones||[]){
+      if(!c||!c.isChanhyeokClone||c.cloneKind!=='purple'||c.hp<=0||!(c.silenceTimer>0))continue;
+      ctx.save();ctx.fillStyle='#fff1a8';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText(`침묵 ${c.silenceTimer.toFixed(1)}초`,c.x,c.y-c.size-23);ctx.restore();
+    }
+  };
+})();
+// V130: 영민·도현 전투 로직.
+(function(){
+  const oldSpecial=specialCharacterTick;
+  specialCharacterTick=function(dt){
+    const silenced=[];
+    for(const b of [player,enemy])if(b&&b.silenceTimer>0){silenced.push([b,b.weapon]);b.weapon='__silenced__';}
+    oldSpecial(dt);
+    for(const [b,w] of silenced)b.weapon=w;
+    for(const b of [player,enemy]){
+      if(!b)continue;const target=b===player?enemy:player;
+      b.silenceTimer=Math.max(0,(b.silenceTimer||0)-dt);
+      if(b.weapon==='yeongmin'){
+        b.eggTimer=(b.eggTimer??7)-dt;b.yeongminUnits=b.yeongminUnits||[];
+        if(b.eggTimer<=0){b.eggTimer+=7;b.yeongminUnits.push({kind:'egg',x:b.x,y:b.y,life:9,owner:b});b.specialText='내 알좀 지켜줘';b.specialTextTimer=1.4;addLog('🥚 영민: 내 알좀 지켜줘! 알 소환.');}
+        for(const u of b.yeongminUnits){u.life-=dt;
+          if(u.kind==='egg'&&Math.hypot(target.x-u.x,target.y-u.y)<target.size+12){u.kind='dash';u.life=3;const behind=Math.atan2(target.y-b.y,target.x-b.x)+Math.PI;const teleportDistance=target.size+b.size+10;b.x=Math.max(b.size+15,Math.min(705-b.size,target.x+Math.cos(behind)*teleportDistance));b.y=Math.max(b.size+15,Math.min(465-b.size,target.y+Math.sin(behind)*teleportDistance));b.vx=0;b.vy=0;u.x=b.x;u.y=b.y;addLog('🥚 알이 깨졌다! 영민이 적의 바로 뒤로 순간이동했다!');}
+          else if(u.kind==='egg'&&u.life<=0){u.kind='chick';u.life=12;addLog('🐣 알이 병아리로 부화했다!');}
+          if(u.kind==='dash'){const a=Math.atan2(target.y-u.y,target.x-u.x);u.vx=(u.vx||0)*.72+Math.cos(a)*11;u.vy=(u.vy||0)*.72+Math.sin(a)*11;const m=Math.hypot(u.vx,u.vy)||1;u.x+=u.vx/m*11;u.y+=u.vy/m*11;if(Math.hypot(target.x-u.x,target.y-u.y)<target.size+10){damageBall(target,20);target.specialText='지켜달랬잖아!!';target.specialTextTimer=1.2;u.life=0;addLog('💥 지켜달랬잖아!! 영민의 돌진 20 피해!');}}
+          if(u.kind==='chick'){const a=Math.atan2(target.y-u.y,target.x-u.x);u.x+=Math.cos(a)*5.2;u.y+=Math.sin(a)*5.2;if(Math.hypot(target.x-u.x,target.y-u.y)<target.size+7){damageBall(target,9);u.life=0;addLog('🐤 병아리가 적을 쪼아 9 피해!');}}
+        }
+        b.yeongminUnits=b.yeongminUnits.filter(u=>u.life>0);
+      }
+      if(b.weapon==='dohyeon'){
+        b.dohyeonTimer=(b.dohyeonTimer??6)-dt;b.dohyeonProjectiles=b.dohyeonProjectiles||[];
+        if(b.dohyeonTimer<=0){b.dohyeonTimer+=6;for(const ch of ['ㄷ','ㅊ']){const a=Math.atan2(target.y-b.y,target.x-b.x);b.dohyeonProjectiles.push({x:b.x,y:b.y,vx:Math.cos(a)*760,vy:Math.sin(a)*760,life:1.5,ch,owner:b});}addLog('ㄷㅊ 도현이 자음 탄환을 발사했다!');}
+        for(const p of b.dohyeonProjectiles){p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;if(p.life>0&&Math.hypot(target.x-p.x,target.y-p.y)<target.size+12){damageBall(target,8);if(p.ch==='ㄷ')target.dStack=(target.dStack||0)+1;else if(p.ch==='ㅊ')target.cStack=(target.cStack||0)+1;p.life=0;addLog(`🔤 도현의 ${p.ch} 적중! 8 피해. (ㄷ ${target.dStack||0} / ㅊ ${target.cStack||0})`);if((target.dStack||0)>=1&&(target.cStack||0)>=1){target.dStack=0;target.cStack=0;target.silenceTimer=3;addLog('🔇 ㄷ과 ㅊ가 각각 1회 이상 적중! 3초 침묵, 스택 초기화.');}}}
+        b.dohyeonProjectiles=b.dohyeonProjectiles.filter(p=>p.life>0);
+      }
+    }
+  };
+  const oldAttack=attack;
+  attack=function(a,b,dt){if(b&&b.silenceTimer>0)return;return oldAttack(a,b,dt);};
+  const oldDraw=drawCharacterEffects;
+  drawCharacterEffects=function(){
+    oldDraw();
+    for(const b of [player,enemy])if(b){
+      for(const u of b.yeongminUnits||[]){ctx.save();if(u.kind==='egg'){ctx.fillStyle='#fff4d8';ctx.strokeStyle='#c58b45';ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(u.x,u.y,12,16,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#9a6a38';ctx.font='bold 10px system-ui';ctx.textAlign='center';ctx.fillText('알',u.x,u.y+4);}else if(u.kind==='chick'){ctx.fillStyle='#ffe66b';ctx.strokeStyle='#fff6c4';ctx.lineWidth=2;ctx.beginPath();ctx.arc(u.x,u.y,9,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#3b2a12';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText('🐣',u.x,u.y+4);}else{ctx.fillStyle='#ff9b35';ctx.font='bold 18px system-ui';ctx.textAlign='center';ctx.fillText('💨',u.x,u.y);}ctx.restore();}
+      for(const p of b.dohyeonProjectiles||[]){ctx.save();ctx.fillStyle=p.ch==='ㄷ'?'#69e5ff':'#ff83dc';ctx.strokeStyle='#ffffff';ctx.lineWidth=3;ctx.font='bold 38px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor=p.ch==='ㄷ'?'#20bfff':'#ff42b6';ctx.shadowBlur=14;ctx.strokeText(p.ch,p.x,p.y);ctx.fillText(p.ch,p.x,p.y);ctx.restore();}
+      if(b.silenceTimer>0){ctx.save();ctx.fillStyle='#fff18a';ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.fillText(`침묵 ${b.silenceTimer.toFixed(1)}초`,b.x,b.y-b.size-25);ctx.restore();}
+    }
+  };
+})();
+// V131: 침묵 중 접촉 공격 차단 및 정지 해제 복구, 제화 출석정지 복원.
+(function(){
+  const v131AttackBase=attack;
+  attack=function(a,b,dt){
+    if(a&&(a.silenceTimer>0||a.suspendedTimer>0))return;
+    return v131AttackBase(a,b,dt);
+  };
+
+  const v131DamageBase=damageBall;
+  damageBall=function(target,amount){
+    // 침묵 상태의 공은 충돌로 밀리거나 접촉 공격 피해를 받지 않는다.
+    if(target&&target.silenceTimer>0&&target._v131ContactDamage)return;
+    return v131DamageBase(target,amount);
+  };
+
+  const v131TickBase=tick;
+  tick=function(t){
+    const frozen=[player,enemy].filter(b=>b&&(b.silenceTimer>0||b.suspendedTimer>0)).map(b=>({
+      b,x:b.x,y:b.y,vx:b._v131ResumeVelocity?.x??b.vx,vy:b._v131ResumeVelocity?.y??b.vy
+    }));
+    v131TickBase(t);
+    for(const s of frozen){
+      const b=s.b;
+      if((b.silenceTimer||0)>0||(b.suspendedTimer||0)>0){
+        b.x=s.x;b.y=s.y;b.vx=0;b.vy=0;b.knock=0;
+        b._v131ResumeVelocity={x:s.vx,y:s.vy};
+      }else if(b._v131ResumeVelocity){
+        const v=b._v131ResumeVelocity;delete b._v131ResumeVelocity;
+        const speed=Math.max(1,b.speed||1),mag=Math.hypot(v.x,v.y);
+        const a=Math.random()*Math.PI*2;
+        b.vx=Math.cos(a)*speed;b.vy=Math.sin(a)*speed;b.knock=0;
+      }
+    }
+  };
+
+  // 제화는 연막 특수 능력의 발동 주기마다 10% 확률로 적에게 3초 출석정지를 부여한다.
+  const v131SpecialBase=specialCharacterTick;
+  specialCharacterTick=function(dt){
+    for(const b of [player,enemy])if(b&&b.weapon==='jehwa'&&b.specialTimer<=dt&&!(b.silenceTimer>0)){
+      const target=b===player?enemy:player;
+      if(target&&target.hp>0&&Math.random()<.10){
+        target.silenceTimer=Math.max(target.silenceTimer||0,3);
+        target.silenceType='출석정지';
+        target.specialText='출석정지';target.specialTextTimer=3;
+        addLog(`🚫 ${target.name}이 제화의 출석정지에 걸렸다! 3초간 침묵!`);
+      }
+    }
+    v131SpecialBase(dt);
+    for(const b of [player,enemy])if(b){
+      if(!(b.silenceTimer>0))b.silenceType='';
+    }
+  };
+
+  const v131DrawBase=drawCharacterEffects;
+  drawCharacterEffects=function(){
+    v131DrawBase();
+    for(const b of [player,enemy])if(b&&b.silenceTimer>0){
+      ctx.save();ctx.fillStyle=b.silenceType==='출석정지'?'#ff9b63':'#fff18a';
+      ctx.font='bold 13px system-ui';ctx.textAlign='center';
+      ctx.fillText(`${b.silenceType||'침묵'} ${b.silenceTimer.toFixed(1)}초`,b.x,b.y-b.size-25);ctx.restore();
+    }
+  };
+})();
+// V132: 침묵 종료 후 무작위 방향으로 이동하고, 침묵 중 모든 특수 스킬 발동 차단.
+(function(){
+  const v132SpecialBase=specialCharacterTick;
+  specialCharacterTick=function(dt){
+    const masked=[];
+    for(const b of [player,enemy])if(b&&(b.silenceTimer>0||b.suspendedTimer>0)){
+      masked.push([b,b.weapon]);
+      b.weapon='__silenced__';
+    }
+    try{v132SpecialBase(dt);}
+    finally{for(const [b,weapon] of masked)b.weapon=weapon;}
+  };
+})();
+
+// V133: 도현 침묵 해제 이동 복구 및 캐릭터별 쿨타임 원형 표시.
+(function(){
+  const previousTick=tick;
+  tick=function(t){
+    const states=[player,enemy].filter(Boolean).map(b=>({b,wasSilenced:(b.silenceTimer||0)>0,x:b.x,y:b.y,vx:b._v131ResumeVelocity?.x??b.vx,vy:b._v131ResumeVelocity?.y??b.vy}));
+    previousTick(t);
+    for(const s of states){const b=s.b;if((b.silenceTimer||0)>0){b.x=s.x;b.y=s.y;b.vx=0;b.vy=0;b.knock=0;b._v133Silenced=true;if(!b._v131ResumeVelocity)b._v131ResumeVelocity={x:s.vx,y:s.vy};}else if(s.wasSilenced||b._v133Silenced){const speed=Math.max(1,b.speed||7),a=Math.random()*Math.PI*2;b.vx=Math.cos(a)*speed;b.vy=Math.sin(a)*speed;b.knock=0;delete b._v131ResumeVelocity;b._v133Silenced=false;}}
+  };
+  const oldDrawBall=drawBall;
+  function cooldown(b){
+    const map={doyun:['specialTimer',5],chanyoung:['creamTimer',3],jae:['slotTimer',5],gyeongryul:['meiSpawnTimer',4],taeeun:['taeeunTimer',7],jehwa:['specialTimer',6],minjae:['minjaeTimer',10],geonho:['geonhoTimer',5],yeongmin:['eggTimer',7],dohyeon:['dohyeonTimer',6],chanhyeok:['cloneCooldown',20],hyunin:['hyuninTimer',7],jeongwon:['jeongwonTimer',7]};
+    if(b.weapon==='jaewon'||b.name==='재원')return {key:'jaewonAwakeningTimer',duration:Math.max(1,b.jaewonAwakeningDuration||10)};
+    const v=map[b.weapon];return v?{key:v[0],duration:v[1]}:{key:'cool',duration:Math.max(1,weapons[b.weapon]?.rate||1)};
+  }
+  drawBall=function(b){oldDrawBall(b);if(!b)return;const c=cooldown(b),remaining=Math.max(0,Math.min(c.duration,Number(b[c.key]??0))),progress=1-remaining/c.duration,x=b.x+b.size+15,y=b.y-8,r=9;ctx.save();ctx.strokeStyle='#173323';ctx.lineWidth=5;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#48f47d';ctx.lineWidth=3.5;ctx.lineCap='round';ctx.shadowColor='#48f47d';ctx.shadowBlur=7;ctx.beginPath();ctx.arc(x,y,r,-Math.PI/2,-Math.PI/2+Math.PI*2*progress);ctx.stroke();ctx.restore();};
+})();
+})();
+</script>
+</body></html>
